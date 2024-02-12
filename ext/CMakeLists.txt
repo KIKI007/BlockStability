@@ -15,13 +15,9 @@ endmacro()
 
 # -----------------------------------------------------------------------------
 # libigl
-option(LIBIGL_GLFW             "Build target igl::glfw"             ON)
-option(LIBIGL_IMGUI            "Build target igl::imgui"            ON)
-option(LIBIGL_OPENGL           "Build target igl::opengl"           ON)
-option(LIBIGL_COPYLEFT_CORE    "Build target igl_copyleft::core"    ON)
 FetchContent_Declare(
-        igl
-        GIT_REPOSITORY https://github.com/libigl/libigl.git
-        GIT_TAG        v2.4.0
+        polyscope
+        GIT_REPOSITORY https://github.com/nmwsharp/polyscope.git
+        GIT_TAG        v2.1.0
 )
-FetchContent_MakeAvailable(igl)
+FetchContent_MakeAvailable(polyscope)

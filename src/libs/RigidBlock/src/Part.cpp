@@ -1,12 +1,12 @@
 //
 // Created by 汪子琦 on 04.09.22.
 //
-#include "block/Block.h"
+#include "RigidBlock/Part.h"
 
-namespace block
+namespace rigid_block
 {
 
-double Block::volume() {
+double Part::volume() {
     double volume = 0;
 
     // Accumulate volume value for each triangle
@@ -25,7 +25,7 @@ double Block::volume() {
     volume = volume / 6.0;
     return volume;
 }
-Eigen::Vector3d Block::centroid()
+Eigen::Vector3d Part::centroid()
 {
     Eigen::Vector3d centroid = Eigen::Vector3d(0, 0, 0);
 
@@ -69,7 +69,7 @@ Eigen::Vector3d Block::centroid()
     return centroid;
 }
 
-Eigen::Vector3d Block::normal(int fid) {
+Eigen::Vector3d Part::normal(int fid) {
     if(fid >= 0 && fid < F_.rows()){
         Eigen::Vector3d v0 = V_.row(F_(fid, 0));
         Eigen::Vector3d v1 = V_.row(F_(fid, 1));
@@ -80,7 +80,7 @@ Eigen::Vector3d Block::normal(int fid) {
     return Eigen::Vector3d(0, 0, 0);
 }
 
-Eigen::Vector3d Block::center(int fid) {
+Eigen::Vector3d Part::center(int fid) {
     if(fid >= 0 && fid < F_.rows()){
         Eigen::Vector3d v0 = V_.row(F_(fid, 0));
         Eigen::Vector3d v1 = V_.row(F_(fid, 1));
@@ -90,7 +90,7 @@ Eigen::Vector3d Block::center(int fid) {
     return Eigen::Vector3d(0, 0, 0);
 }
 
-std::vector<Eigen::Vector3d> Block::face(int fid) {
+std::vector<Eigen::Vector3d> Part::face(int fid){
     if(fid >= 0 && fid < F_.rows()){
         Eigen::Vector3d v0 = V_.row(F_(fid, 0));
         Eigen::Vector3d v1 = V_.row(F_(fid, 1));

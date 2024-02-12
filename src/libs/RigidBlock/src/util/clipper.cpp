@@ -38,7 +38,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#include "block/clipper.hpp"
+#include "RigidBlock/util/clipper.hpp"
 #include <cmath>
 #include <vector>
 #include <algorithm>

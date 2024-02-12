@@ -9,7 +9,7 @@
 using Eigen::Matrix;
 using std::vector;
 
-namespace block{
+namespace rigid_block{
 class PolyPolyBoolean
 {
 public:

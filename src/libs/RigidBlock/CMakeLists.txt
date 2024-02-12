@@ -1,18 +1,20 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(block)
+project(rigid_block)
 
 set(CRL_TARGET_NAME ${PROJECT_NAME})
 
 file(
         GLOB
         CRL_SOURCES #
-        "${CMAKE_CURRENT_SOURCE_DIR}/include/block/*.h" #
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" #
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/block/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/block/util/*.h" #
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/util/*.cpp"#
 )
 
-find_package(Boost REQUIRED)
 find_package(GUROBI REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 # dependencies
 list(
@@ -21,12 +23,9 @@ list(
         "Eigen3::Eigen"
 )
 
-message(${CRL_TARGET_DEPENDENCIES})
-
 # target include dirs
 list(APPEND CRL_TARGET_INCLUDE_DIRS #
      PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
-     PUBLIC "${Boost_INCLUDE_DIRS}"
      PUBLIC "${GUROBI_INCLUDE_DIRS}")
 
 # target link libs
@@ -35,8 +34,6 @@ list(
         CRL_TARGET_LINK_LIBS #
         PUBLIC
         "Eigen3::Eigen"
-        PUBLIC
-        "${Boost_LIBRARIES}"
         PUBLIC
         "${GUROBI_LIBRARY}"
         PUBLIC

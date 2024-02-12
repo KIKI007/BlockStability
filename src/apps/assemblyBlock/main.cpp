@@ -1,109 +1,38 @@
-#include <igl/opengl/glfw/Viewer.h>
-#include <igl/opengl/glfw/imgui/ImGuiPlugin.h>
-#include <igl/opengl/glfw/imgui/ImGuiMenu.h>
-#include <igl/opengl/glfw/imgui/ImGuiHelpers.h>
-#include <igl/file_dialog_open.h>
-#include "block/BlockAssembly.h"
+#include "RigidBlock/Assembly.h"
+#include "polyscope/polyscope.h"
+#include "polyscope/surface_mesh.h"
+#include <imgui.h>
+#include "file_dialog_open.h"
 
-void drawBlock(igl::opengl::glfw::Viewer &viewer,
-               std::shared_ptr<block::BlockAssembly> blockAssembly){
-    viewer.data_list.clear();
+std::vector<polyscope::SurfaceMesh *> block_render_objs;
+polyscope::SurfaceMesh* contact_render_obj;
 
-    int nV = 0, nF = 0, nN = 0;
-    for (int id = 0; id < blockAssembly->blocks_.size(); id++) {
-        igl::opengl::ViewerData blockData = igl::opengl::ViewerData();
-        auto block = blockAssembly->blocks_[id];
-        nV += block->V_.rows();
-        nF += block->F_.rows();
-        nN += block->N_.rows();
-    }
-
-    Eigen::MatrixXd V(nV, 3);
-    Eigen::MatrixXi F(nF, 3);
-    Eigen::MatrixXd N(nN, 3);
-    Eigen::MatrixXd C(nF, 3);
-
-    int iV = 0; int iF = 0; int iN = 0;
+void drawBlock(std::shared_ptr<rigid_block::Assembly> blockAssembly, bool visible)
+{
+    block_render_objs.clear();
     for (int id = 0; id < blockAssembly->blocks_.size(); id++)
     {
+        std::string name = "block" + std::to_string(id);
         auto block = blockAssembly->blocks_[id];
-        V.block(iV, 0, block->V_.rows(), 3) = block->V_;
-        F.block(iF, 0, block->F_.rows(), 3) = block->F_ + Eigen::MatrixXi::Ones(block->F_.rows(), 3) * iV;
-        N.block(iN, 0, block->N_.rows(), 3) = block->N_;
-        if(block->ground_){
-            C.block(iF, 0, block->F_.rows(), 3) =  Eigen::MatrixXd::Ones(block->F_.rows(), 3) * 0.1;
-        }
-        else{
-            C.block(iF, 0, block->F_.rows(), 3) =  Eigen::MatrixXd::Ones(block->F_.rows(), 3) * 0.8;
-        }
-        iV += block->V_.rows();
-        iF += block->F_.rows();
-        iN += block->N_.rows();
+        auto block_obj = polyscope::registerSurfaceMesh(name,  block->V_,  block->F_);
+        Eigen::Vector3d color = block->color();
+        std::cout << block->ground_ << std::endl;
+        block_obj->setSurfaceColor({color[0], color[1], color[2]});
+        //block_obj->setEdgeWidth(1.0);
+        block_obj->setEnabled(visible);
+        block_render_objs.push_back(block_obj);
     }
-
-    igl::opengl::ViewerData blockData = igl::opengl::ViewerData();
-    blockData.id = viewer.data_list.size();
-    blockData.set_mesh(V, F);
-    blockData.set_colors(C);
-    blockData.set_normals(N);
-    blockData.face_based = true;
-    viewer.data_list.push_back(blockData);
-    viewer.selected_core_index = 0;
-    viewer.selected_data_index = 0;
 }
 
-void drawContactNormal(igl::opengl::glfw::Viewer &viewer,
-                       std::shared_ptr<block::BlockAssembly> blockAssembly){
-
-    igl::opengl::ViewerData data = igl::opengl::ViewerData();
-    std::vector<int> partIDs;
-    for(int id = 0; id < blockAssembly->blocks_.size(); id++){
-        partIDs.push_back(id);
-    }
-    auto graph = blockAssembly->computeContactGraph(partIDs);
-    for(int id = 0; id < graph->contacts_.size(); id++)
-    {
-        Eigen::RowVector3d point = std::get<3>(graph->contacts_[id]);
-        Eigen::RowVector3d normal = std::get<2>(graph->contacts_[id]);
-        data.add_points(point, Eigen::RowVector3d(1, 0, 0));
-        data.add_edges(point, point + normal * 0.1, Eigen::RowVector3d(0, 1, 0));
-    }
-    data.id = viewer.data_list.size();
-    viewer.data_list.push_back(data);
-}
-
-void drawPartIndex(igl::opengl::glfw::Viewer &viewer,
-                   std::shared_ptr<block::BlockAssembly> blockAssembly){
-    igl::opengl::ViewerData data = igl::opengl::ViewerData();
-    for(int id = 0; id < blockAssembly->blocks_.size(); id++){
-        auto block = blockAssembly->blocks_[id];
-        Eigen::RowVector3d ct = block->centroid();
-        data.add_points(ct, Eigen::RowVector3d(0, 1, 0));
-        data.add_label(ct.transpose(), std::to_string(id));
-    }
-
-    for(int id = 0; id < blockAssembly->support_forces_.size(); id++){
-        auto block = blockAssembly->blocks_[id];
-        Eigen::RowVector3d ct = block->centroid();
-        Eigen::RowVector3d force = blockAssembly->support_forces_[id];
-        data.add_edges(ct, ct + 10 * force, Eigen::RowVector3d(0, 0, 1));
-    }
-
-    data.id = viewer.data_list.size();
-    viewer.data_list.push_back(data);
-}
-
-void drawContact(igl::opengl::glfw::Viewer &viewer,
-                 std::shared_ptr<block::BlockAssembly> blockAssembly)
+void drawContact(std::shared_ptr<rigid_block::Assembly> blockAssembly, bool visible)
 {
-
-    std::vector<block::Contact> contacts;
+    std::vector<rigid_block::Contact> contacts;
     std::vector<int> partIDs;
     for(int id = 0; id < blockAssembly->blocks_.size(); id++)
     {
         partIDs.push_back(id);
     }
-    blockAssembly->computeContacts(partIDs, contacts);
+    contacts = blockAssembly->computeContacts(partIDs);
 
     int nV = 0;
     int nF = 0;
@@ -118,7 +47,6 @@ void drawContact(igl::opengl::glfw::Viewer &viewer,
 
     int iV = 0;
     int iF = 0;
-    igl::opengl::ViewerData contactData = igl::opengl::ViewerData();
 
     for(int id = 0; id < contacts.size(); id++)
     {
@@ -136,51 +64,48 @@ void drawContact(igl::opengl::glfw::Viewer &viewer,
         iV += nV;
         iF += nV - 2;
     }
-    contactData.set_mesh(V, F);
-    contactData.id = viewer.data_list.size();
-    viewer.data_list.push_back(contactData);
-    viewer.selected_core_index = 0;
-    viewer.selected_data_index = 0;
+
+    contact_render_obj = polyscope::registerSurfaceMesh("contact", V, F);
+    contact_render_obj->setEnabled(visible);
 }
 
-void drawContent(igl::opengl::glfw::Viewer &viewer,
-                 std::shared_ptr<block::BlockAssembly> blockAssembly,
-                 bool show_contact,
-                 bool show_contact_normal,
-                 bool show_index) {
-    viewer.data_list.clear();
-    if(show_contact) drawContact(viewer, blockAssembly);
-    if(show_contact_normal) drawContactNormal(viewer, blockAssembly);
-    if(show_index) drawPartIndex(viewer, blockAssembly);
-}
+// void drawContent(igl::opengl::glfw::Viewer &viewer,
+//                  std::shared_ptr<rigid_block::Assembly> blockAssembly,
+//                  bool show_contact,
+//                  bool show_contact_normal,
+//                  bool show_index) {
+//     viewer.data_list.clear();
+//     if(show_contact) drawContact(viewer, blockAssembly);
+//     if(show_contact_normal) drawContactNormal(viewer, blockAssembly);
+//     if(show_index) drawPartIndex(viewer, blockAssembly);
+// }
 
 int main()
 {
-    std::shared_ptr<block::BlockAssembly> blockAssembly;
+    std::shared_ptr<rigid_block::Assembly> blockAssembly;
 
-    igl::opengl::glfw::Viewer viewer;
-    igl::opengl::glfw::imgui::ImGuiPlugin plugin;
-    viewer.plugins.push_back(&plugin);
-    igl::opengl::glfw::imgui::ImGuiMenu menu;
-    plugin.widgets.push_back(&menu);
-
+    static bool show_assembly = true;
+    static bool show_assembly_wireframe = true;
 
     static bool show_contact = false;
     static bool show_contact_normal = false;
     static bool show_index = false;
     static float fr_coeff = 0;
+
+    polyscope::init();
+
     // Add content to the default menu window
-    menu.callback_draw_viewer_menu = [&](){
-        // Draw parent menu content
-        //menu.draw_viewer_menu();
+     polyscope::state::userCallback= [&]()
+    {
 
         if (ImGui::CollapsingHeader("I/O", ImGuiTreeNodeFlags_DefaultOpen))
         {
             if(ImGui::Button("Open File")){
-                std::string obj_file = igl::file_dialog_open();
-                blockAssembly = std::make_shared<block::BlockAssembly>();
+                std::string obj_file = file_dialog_open();
+                blockAssembly = std::make_shared<rigid_block::Assembly>();
                 blockAssembly->loadFromFile(obj_file);
-                drawBlock(viewer, blockAssembly);
+                drawBlock(blockAssembly, show_assembly);
+                drawContact(blockAssembly, show_contact);
             }
 
             if(ImGui::SliderFloat("friction coeff", &fr_coeff, 0, 1)){
@@ -189,13 +114,13 @@ int main()
 
             if(ImGui::Button("Check Stability"))
             {
-                if(blockAssembly){
+                if(blockAssembly)
+                {
                     std::vector<int> partIDs;
                     blockAssembly->friction_mu_ = fr_coeff;
-                    for(int id = 0; id < blockAssembly->blocks_.size(); id++) {
-                        partIDs.push_back(id);
-                    }
-                    if(blockAssembly->checkStability(partIDs))
+                    auto analyzer = blockAssembly->createAnalyzer();
+                    Eigen::VectorXd forces;
+                    if(analyzer->checkStability(forces))
                     {
                         std::cout << "Stable" << std::endl;
                     }
@@ -208,33 +133,29 @@ int main()
 
         if(ImGui::CollapsingHeader("Rendering", ImGuiTreeNodeFlags_DefaultOpen))
         {
+            if(ImGui::Checkbox("assembly", &show_assembly))
+            {
+                for(auto obj : block_render_objs)
+                    obj->setEnabled(show_assembly);
+            }
+
+
             if(ImGui::Checkbox("contact", &show_contact))
             {
-                drawContent(viewer, blockAssembly, show_contact, show_contact_normal, show_index);
+                contact_render_obj->setEnabled(show_contact);
             }
 
-            if(ImGui::Checkbox("contact normal", &show_contact_normal))
-            {
-                drawContent(viewer, blockAssembly, show_contact, show_contact_normal, show_index);
-            }
-
-            if(ImGui::Checkbox("show index", &show_index)){
-                drawContent(viewer, blockAssembly, show_contact, show_contact_normal, show_index);
-            }
-        }
-
-        if(ImGui::CollapsingHeader("Boundary", ImGuiTreeNodeFlags_CollapsingHeader)){
-            if(blockAssembly){
-                for(int id = 0; id < blockAssembly->blocks_.size(); id++)
-                {
-                    std::string block_str = "block" + std::to_string(id);
-                    if(ImGui::Checkbox(block_str.c_str(), &blockAssembly->blocks_[id]->ground_)){
-                        drawBlock(viewer, blockAssembly);
-                    }
-                }
-            }
+        //     if(ImGui::Checkbox("contact normal", &show_contact_normal))
+        //     {
+        //         drawContent(viewer, blockAssembly, show_contact, show_contact_normal, show_index);
+        //     }
+        //
+        //     if(ImGui::Checkbox("show index", &show_index)){
+        //         drawContent(viewer, blockAssembly, show_contact, show_contact_normal, show_index);
+        //     }
         }
     };
 
-    viewer.launch();
+    // Give control to the polyscope gui
+    polyscope::show();
 }

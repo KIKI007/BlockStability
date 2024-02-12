@@ -10,9 +10,8 @@ file(GLOB CRL_SOURCES #
 list(
     APPEND
     CRL_TARGET_DEPENDENCIES #
-    "crl::block" #
-    "igl::glfw"
-    "igl::imgui"
+    "crl::rigid_block" #
+    "polyscope"
 )
 
 list(APPEND CRL_TARGET_INCLUDE_DIRS #
@@ -21,11 +20,8 @@ list(APPEND CRL_TARGET_INCLUDE_DIRS #
 
 list(APPEND CRL_TARGET_LINK_LIBS #
     PUBLIC
-    "crl::block" #
-    PUBLIC
-    "igl::glfw"
-    PUBLIC
-    "igl::imgui"
+    "crl::rigid_block" #
+    "polyscope"
 )
 
 list(APPEND CRL_COMPILE_DEFINITIONS #
