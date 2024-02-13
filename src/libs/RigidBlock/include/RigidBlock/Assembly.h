@@ -12,7 +12,7 @@
 
 namespace rigid_block
 {
-    class Contact
+    class ContactFace
     {
     public:
         int partIDA;
@@ -47,17 +47,21 @@ namespace rigid_block
 
         void loadFromFile(std::string filename);
 
-        std::vector<Contact> computeContacts(const std::vector<int> &subPartIDs);
+        std::vector<ContactFace> computeContacts(const std::vector<int> &subPartIDs);
 
-        std::vector<Contact> computeContacts(std::shared_ptr<Part> block1, std::shared_ptr<Part> block2);
+        std::vector<ContactFace> computeContacts(std::shared_ptr<Part> block1, std::shared_ptr<Part> block2);
 
-        std::vector<Contact> simplifyContact(const std::vector<Eigen::Vector3d> &points, const std::vector<Eigen::Vector3d> &normals);
+        void toMesh(const std::vector<ContactFace> &contacts, Eigen::MatrixXd &V, Eigen::MatrixXi &F);
+
+        std::vector<ContactFace> simplifyContact(const std::vector<Eigen::Vector3d> &points, const std::vector<Eigen::Vector3d> &normals);
 
         void addGroundPlane();
 
         void updateGroundBlocks();
 
-        std::shared_ptr<block_stability::Analyzer> createAnalyzer();
+        std::shared_ptr<Analyzer> createAnalyzer();
+
+        double computeAvgDiagnalLength();
     };
 }
 

@@ -1,1 +1,1 @@
-add_subdirectory(assemblyBlock)
+add_subdirectory(StructureAnalyzer)

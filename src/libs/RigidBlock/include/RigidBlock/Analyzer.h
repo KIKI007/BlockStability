@@ -11,8 +11,43 @@
 
 using std::vector;
 
-namespace block_stability
+namespace rigid_block
 {
+
+    class Arrow
+    {
+    public:
+        Eigen::MatrixXd V;
+        Eigen::MatrixXi E;
+        void from_points(const std::vector<Eigen::Vector3d> &points);
+        std::string name;
+        Eigen::Vector3d color;
+    };
+
+    class ContactPoint{
+    public:
+        int partIDA;
+        int partIDB;
+        Eigen::Vector3d contact_point;
+        Eigen::Vector3d contact_normal;
+        Eigen::Vector3d contact_friction_t1;
+        Eigen::Vector3d contact_friction_t2;
+    };
+
+    class AnalysisResult
+    {
+    public:
+
+        Eigen::VectorXd internal_contact_forces;
+        Eigen::VectorXd support_forces;
+        std::vector<ContactPoint> contact_points;
+        Eigen::VectorXd gravity_forces;
+        std::vector<Eigen::Vector3d> centroid;
+        bool with_tension;
+
+        std::vector<Arrow> computeArrows(int partID);
+    };
+
     class Analyzer
     {
     public:
@@ -26,7 +61,7 @@ namespace block_stability
         // contact list
         // partIDA, partIDB, normal, contact point
         // id is -1 if the corresponding block is fixed
-        std::vector<std::tuple<int, int, Eigen::Vector3d, Eigen::Vector3d>> contacts_;
+        std::vector<ContactPoint> contact_points_;
 
         //blocks' weight
         std::vector<double> mass_;
@@ -65,12 +100,12 @@ namespace block_stability
             n_part_ = analyzer.n_part_;
             mass_ = analyzer.mass_;
             centroid_ = analyzer.centroid_;
-            contacts_ = analyzer.contacts_;
+            contact_points_ = analyzer.contact_points_;
         }
 
     public:
 
-        int n_contact(){return contacts_.size();}
+        int n_contact(){return contact_points_.size();}
 
         int n_part(){return n_part_;}
 
@@ -78,7 +113,7 @@ namespace block_stability
 
         Eigen::Vector3d centroid(int index){return centroid_.at(index);}
 
-        std::tuple<int, int, Eigen::Vector3d, Eigen::Vector3d> contact(int index){return contacts_.at(index);}
+        ContactPoint contact(int index){return contact_points_.at(index);}
 
 
     public: //check stability
@@ -98,7 +133,9 @@ namespace block_stability
 
         void updateGravity();
 
-        bool checkStability(Eigen::VectorXd &contactForces, bool tension = true);
+        bool solve(AnalysisResult &result, bool tension = true);
+
+        void getInternalForcesArrow(AnalysisResult &result);
 
     private: //setup the gurobi solver
 

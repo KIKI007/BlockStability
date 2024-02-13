@@ -7,13 +7,13 @@
 #include "RigidBlock/util/ConvexHull2D.h"
 
 namespace rigid_block {
-    std::vector<Contact> Assembly::computeContacts(const std::vector<int> &subPartIDs) {
-        std::vector<Contact> contacts;
+    std::vector<ContactFace> Assembly::computeContacts(const std::vector<int> &subPartIDs) {
+        std::vector<ContactFace> contacts;
         for (int id = 0; id < subPartIDs.size(); id++) {
             for (int jd = id + 1; jd < subPartIDs.size(); jd++) {
                 int partIDA = subPartIDs[id];
                 int partIDB = subPartIDs[jd];
-                std::vector<Contact> list_contacts = computeContacts(blocks_[partIDA], blocks_[partIDB]);
+                std::vector<ContactFace> list_contacts = computeContacts(blocks_[partIDA], blocks_[partIDB]);
                 for (int kd = 0; kd < list_contacts.size(); kd++) {
                     list_contacts[kd].partIDA = id;
                     list_contacts[kd].partIDB = jd;
@@ -24,7 +24,7 @@ namespace rigid_block {
         return contacts;
     }
 
-    std::vector<Contact> Assembly::computeContacts(std::shared_ptr<Part> block1,
+    std::vector<ContactFace> Assembly::computeContacts(std::shared_ptr<Part> block1,
                                                    std::shared_ptr<Part> block2) {
         PolyPolyBoolean boolean;
 
@@ -62,9 +62,42 @@ namespace rigid_block {
         return simplifyContact(points, normals);
     }
 
-    std::vector<Contact> Assembly::simplifyContact(const std::vector<Eigen::Vector3d> &points,
-                                                   const std::vector<Eigen::Vector3d> &normals) {
-        std::vector<Contact> contacts;
+    void Assembly::toMesh(const std::vector<ContactFace> &contacts, Eigen::MatrixXd &V, Eigen::MatrixXi &F)
+    {
+        int nV = 0;
+        int nF = 0;
+        for (int id = 0; id < contacts.size(); id++) {
+            auto contact = contacts[id];
+            nV += contact.points.size();
+            nF += contact.points.size() - 2;
+        }
+
+        V = Eigen::MatrixXd(nV, 3);
+        F = Eigen::MatrixXi(nF, 3);
+
+        int iV = 0;
+        int iF = 0;
+
+        for (int id = 0; id < contacts.size(); id++) {
+            auto contact = contacts[id];
+            int nV = contact.points.size();
+            for (int jd = 0; jd < nV; jd++) {
+                V.row(jd + iV) = contact.points[jd];
+            }
+            for (int jd = 2; jd < nV; jd++) {
+                F(jd - 2 + iF, 0) = iV;
+                F(jd - 2 + iF, 1) = iV + jd - 1;
+                F(jd - 2 + iF, 2) = iV + jd;
+            }
+            iV += nV;
+            iF += nV - 2;
+        }
+    }
+
+    std::vector<ContactFace> Assembly::simplifyContact(const std::vector<Eigen::Vector3d> &points,
+                                                       const std::vector<Eigen::Vector3d> &normals)
+    {
+        std::vector<ContactFace> contacts;
 
         std::vector<int> groupIDs;
         groupIDs.resize(points.size(), -1);
@@ -99,8 +132,9 @@ namespace rigid_block {
             }
             std::vector<Eigen::Vector3d> hull;
             convexhull.compute(hull_pts, hull_n, hull);
-            Contact newContact;
-            if (!hull.empty()) {
+            ContactFace newContact;
+            if (!hull.empty())
+            {
                 std::vector<Eigen::Vector3d> results;
                 results.push_back(hull.front());
                 for (int jd = 1; jd < hull.size(); jd++) {
@@ -172,7 +206,7 @@ namespace rigid_block {
     void Assembly::updateGroundBlocks() {
         for (int id = 0; id < blocks_.size(); id++) {
             std::shared_ptr<Part> block = blocks_[id];
-            std::vector<Contact> contacts;
+            std::vector<ContactFace> contacts;
             contacts = computeContacts(block, ground_plane_);
             if (!contacts.empty()) {
                 block->ground_ = true;
@@ -222,25 +256,27 @@ namespace rigid_block {
         ground_plane_->ground_ = true;
     }
 
-    std::shared_ptr<block_stability::Analyzer> Assembly::createAnalyzer()
+    std::shared_ptr<Analyzer> Assembly::createAnalyzer()
     {
-        std::shared_ptr<block_stability::Analyzer> analyzer
-        = std::make_shared<block_stability::Analyzer>(blocks_.size());
+        std::shared_ptr<Analyzer> analyzer
+        = std::make_shared<Analyzer>(blocks_.size());
         analyzer->updateFrictionCeoff(friction_mu_);
 
         std::vector<int> partIDs;
+        double length = computeAvgDiagnalLength();
+
         for (int ipart = 0; ipart < blocks_.size(); ipart++) {
             partIDs.push_back(ipart);
-            analyzer->updatePart(ipart, blocks_[ipart]->volume(), blocks_[ipart]->centroid());
+            analyzer->updatePart(ipart, blocks_[ipart]->volume() / pow(length, 3.0), blocks_[ipart]->centroid());
             if (blocks_[ipart]->ground_) {
-                analyzer->updatePartStatus(ipart, block_stability::Analyzer::Fixed);
+                analyzer->updatePartStatus(ipart, Analyzer::Fixed);
             }
             else {
-                analyzer->updatePartStatus(ipart, block_stability::Analyzer::Installed);
+                analyzer->updatePartStatus(ipart, Analyzer::Installed);
             }
         }
 
-        std::vector<Contact> contacts;
+        std::vector<ContactFace> contacts;
         contacts = computeContacts(partIDs);
 
         for (int id = 0; id < contacts.size(); id++) {
@@ -251,5 +287,15 @@ namespace rigid_block {
         analyzer->updateGravity();
 
         return analyzer;
+    }
+
+    double Assembly::computeAvgDiagnalLength()
+    {
+        double length = 0;
+        for(int partID = 0; partID < blocks_.size(); partID ++) {
+            length += blocks_[partID]->computeDiagnalLength();
+        }
+        length /= blocks_.size();
+        return length;
     }
 }

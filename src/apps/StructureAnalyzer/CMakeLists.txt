@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(assemblyBlock)
+project(StructureAnalyzer)
 
 file(GLOB CRL_SOURCES #
      "${CMAKE_CURRENT_SOURCE_DIR}/*.h" #
@@ -10,7 +10,7 @@ file(GLOB CRL_SOURCES #
 list(
     APPEND
     CRL_TARGET_DEPENDENCIES #
-    "crl::rigid_block" #
+    "kiki::rigid_block" #
     "polyscope"
 )
 
@@ -20,7 +20,7 @@ list(APPEND CRL_TARGET_INCLUDE_DIRS #
 
 list(APPEND CRL_TARGET_LINK_LIBS #
     PUBLIC
-    "crl::rigid_block" #
+    "kiki::rigid_block" #
     "polyscope"
 )
 
@@ -29,7 +29,7 @@ list(APPEND CRL_COMPILE_DEFINITIONS #
      PUBLIC "ROBOCRAFT_DATA_FOLDER=${ROBOCRAFT_DATA_FOLDER}" #
 )
 
-create_crl_app(
+create_app(
     ${PROJECT_NAME}
     "${CRL_SOURCES}" #
     "${CRL_TARGET_DEPENDENCIES}" #

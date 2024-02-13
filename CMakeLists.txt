@@ -9,7 +9,7 @@ if(DEFINED ENV{VCPKG_DIR} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 
 # set name of the project
-project(robo-craft)
+project(block_stability)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CXX 1)
@@ -28,7 +28,7 @@ set(ROBOCRAFT_TOPLEVEL_FOLDER "${CMAKE_CURRENT_LIST_DIR}"
 # -----------------------------------------------------------------------------
 # create static library named LIB_NAME
 function(
-    create_crl_library #
+    create_library #
     LIB_NAME #
     SOURCE #
     DEPENDENCY #
@@ -37,7 +37,7 @@ function(
     COMPILE_DEFINITIONS #
 )
     add_library(${LIB_NAME} STATIC ${SOURCE})
-    add_library(crl::${LIB_NAME} ALIAS ${LIB_NAME})
+    add_library(kiki::${LIB_NAME} ALIAS ${LIB_NAME})
     add_dependencies(${LIB_NAME} ${DEPENDENCY})
     target_include_directories(${LIB_NAME} ${INCLUDE_DIRS})
     target_link_libraries(${LIB_NAME} ${LINK_LIBS})
@@ -53,7 +53,7 @@ endfunction()
 
 # create executable named APP_NAME
 function(
-    create_crl_app #
+    create_app #
     APP_NAME #
     SOURCE #
     DEPENDENCY #
@@ -74,39 +74,6 @@ function(
     # For solution explorer in visual studios
     set_property(TARGET ${APP_NAME} PROPERTY FOLDER "Apps")
 endfunction()
-
-# create executable named DEMO_NAME
-function(
-    create_crl_demo #
-    DEMO_NAME #
-    SOURCE #
-    DEPENDENCY #
-    INCLUDE_DIRS #
-    LINK_LIBS #
-    COMPILE_DEFINITIONS #
-    )
-    
-    add_executable(${DEMO_NAME} ${SOURCE})
-    add_dependencies(${DEMO_NAME} ${DEPENDENCY})
-    target_include_directories(${DEMO_NAME} ${INCLUDE_DIRS})
-    target_link_libraries(${DEMO_NAME} ${LINK_LIBS})
-
-    if(COMPILE_DEFINITIONS)
-        target_compile_definitions(${DEMO_NAME} ${COMPILE_DEFINITIONS})
-    endif()
-
-    # For solution explorer in visual studios
-    set_property(TARGET ${DEMO_NAME} PROPERTY FOLDER "Demos")
-endfunction()
-
-# demo options
-option(ROBOCRAFT_DEMO_ALLEGROHAND "Build allegro hand demo" OFF)
-option(ROBOCRAFT_DEMO_KINOVA "Build kinova gen3 robot demo" OFF)
-option(ROBOCRAFT_DEMO_OPTITRACK "Build optitrack demo" OFF)
-option(ROBOCRAFT_DEMO_SAKEGRIPPER "Build sake gripper demo" OFF)
-option(ROBOCRAFT_DEMO_UR5 "Build ur5 robot demo" OFF)
-option(ROBOCRAFT_DEMO_WIDOWX "Build widowx robot demo" OFF)
-option(ROBOCRAFT_DEMO_YUMI "Build yumi robot demo" OFF)
 
 # -----------------------------------------------------------------------------
 # code

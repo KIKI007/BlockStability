@@ -49,7 +49,7 @@ list(
 )
 
 # create target
-create_crl_library(
+create_library(
         ${CRL_TARGET_NAME}
         "${CRL_SOURCES}" #
         "${CRL_TARGET_DEPENDENCIES}" #

@@ -39,6 +39,8 @@ namespace rigid_block {
 
         std::vector<Eigen::Vector3d> face(int fid);
 
+        double computeDiagnalLength();
+
         int nF(){return F_.rows();}
 
         Eigen::Vector3d color() {

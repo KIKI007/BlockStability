@@ -6,14 +6,145 @@
 
 #include "iostream"
 
-namespace block_stability
+namespace rigid_block
 {
+    void Arrow::from_points(const std::vector<Eigen::Vector3d> &points) {
+        V = Eigen::MatrixXd(points.size(), 3);
+        E = Eigen::MatrixXi(points.size() / 2, 2);
+        for(int id = 0; id < points.size() / 2; id++) {
+            V.row(2 * id) = points[id * 2];
+            V.row(2 * id + 1) = points[id * 2 + 1];
+            E.row(id) = Eigen::RowVector2i(2 * id, 2 * id + 1);
+        }
+    }
+
+    std::vector<Arrow> AnalysisResult::computeArrows(int partID)
+    {
+
+        if(contact_points.empty())
+            return {};
+
+        std::vector<Eigen::Vector3d> compression_pts, tension_pts, friction_pts;
+        std::vector<Eigen::Vector3d> gravity_pts, support_pts;
+        int fdim = with_tension ? 4 : 3;
+
+        for(int icontact = 0; icontact < contact_points.size(); icontact++)
+        {
+            int partIDA = contact_points[icontact].partIDA;
+            int partIDB = contact_points[icontact].partIDB;
+
+            if(partID != partIDA && partID != partIDB) {
+                continue;
+            }
+
+            Eigen::Vector3d n = contact_points[icontact].contact_normal;
+            Eigen::Vector3d r = contact_points[icontact].contact_point;
+            Eigen::Vector3d t1 = contact_points[icontact].contact_friction_t1;
+            Eigen::Vector3d t2 = contact_points[icontact].contact_friction_t2;
+
+            if(partIDA == partID) {
+                n = -n;
+                t1 = -t1;
+                t2 = -t2;
+            }
+
+            //compression
+            {
+                compression_pts.push_back(r);
+                compression_pts.push_back(r + n * internal_contact_forces[icontact * fdim]);
+            }
+
+            //tension
+            if(with_tension) {
+                tension_pts.push_back(r);
+                tension_pts.push_back(r - n * internal_contact_forces[icontact * fdim + 1]);
+            }
+
+            //friction
+            {
+                friction_pts.push_back(r);
+                friction_pts.push_back(r + t1 * internal_contact_forces[icontact * fdim - 2 + fdim] + t2 * internal_contact_forces[icontact * fdim - 1 + fdim]);
+            }
+        }
+
+
+        Eigen::Vector3d ct = centroid[partID];
+        Eigen::Vector3d g = gravity_forces.segment(partID * 6, 3);
+        Eigen::Vector3d sf = support_forces.segment(partID * 6, 3);
+        {
+            gravity_pts.push_back(ct);
+            gravity_pts.push_back(ct + g);
+        }
+        {
+            support_pts.push_back(ct);
+            support_pts.push_back(ct + sf);
+        }
+
+
+        std::vector<Arrow> result;
+
+
+        {
+            Arrow compression;
+            compression.from_points(compression_pts);
+            compression.name = "compression";
+            compression.color = {1.0, 0.0, 0.0};
+            result.push_back(compression);
+        }
+
+
+        if(with_tension) {
+            Arrow tension;
+            tension.from_points(tension_pts);
+            tension.name = "tension";
+            tension.color = {0.0, 0.0, 1.0};
+            result.push_back(tension);
+        }
+
+        {
+            Arrow friction;
+            friction.from_points(friction_pts);
+            friction.name = "friction";
+            friction.color = {0.0, 1.0, 0.0};
+            result.push_back(friction);
+        }
+
+        {
+            Arrow gravity;
+            gravity.from_points(gravity_pts);
+            gravity.name = "gravity";
+            gravity.color = {1.0, 1.0, 0.0};
+            result.push_back(gravity);
+        }
+
+        {
+            Arrow support;
+            support.from_points(support_pts);
+            support.name = "support";
+            support.color = {0.0, 1.0, 1.0};
+            result.push_back(support);
+        }
+
+        return result;
+    }
+
     void Analyzer::addContact(int partIDA,
-                               int partIDB,
-                               const Eigen::Vector3d &normal,
-                               const std::vector<Eigen::Vector3d> &normal_point) {
-        for (int id = 0; id < normal_point.size(); id++) {
-            contacts_.push_back(std::make_tuple(partIDA, partIDB, normal, normal_point[id]));
+                              int partIDB,
+                              const Eigen::Vector3d &normal,
+                              const std::vector<Eigen::Vector3d> &normal_point)
+    {
+        ContactPoint contact_point;
+        Eigen::Vector3d t1, t2;
+        computeFrictionDir(normal, t1, t2);
+        for (int id = 0; id < normal_point.size(); id++)
+        {
+            contact_point.contact_point = normal_point[id];
+            contact_point.contact_normal = normal;
+            contact_point.contact_friction_t1 = t1;
+            contact_point.contact_friction_t2 = t2;
+            contact_point.partIDA = partIDA;
+            contact_point.partIDB = partIDB;
+            contact_points_.push_back(contact_point);
         }
     }
 
@@ -26,15 +157,15 @@ namespace block_stability
 
     void Analyzer::updateEquilibriumMatrix(bool tension)
     {
-        for (int ic = 0; ic < contacts_.size(); ic++)
+        for (int ic = 0; ic < contact_points_.size(); ic++)
         {
-            int partIDA = std::get<0>(contacts_[ic]);
-            int partIDB = std::get<1>(contacts_[ic]);
+            int partIDA = contact_points_[ic].partIDA;
+            int partIDB = contact_points_[ic].partIDB;
 
-            Eigen::Vector3d n = std::get<2>(contacts_[ic]);
-            Eigen::Vector3d r = std::get<3>(contacts_[ic]);
-            Eigen::Vector3d t1, t2;
-            computeFrictionDir(n, t1, t2);
+            Eigen::Vector3d n = contact_points_[ic].contact_normal;
+            Eigen::Vector3d r = contact_points_[ic].contact_point;
+            Eigen::Vector3d t1 = contact_points_[ic].contact_friction_t1;
+            Eigen::Vector3d t2 = contact_points_[ic].contact_friction_t2;
 
             std::vector<int> partIDs = {partIDA, partIDB};
             std::vector<Eigen::Vector3d> drts;
@@ -98,9 +229,13 @@ namespace block_stability
         t2.normalize();
     }
 
-    bool Analyzer::checkStability(Eigen::VectorXd &contactForces, bool tension)
+    bool Analyzer::solve(AnalysisResult &result, bool tension)
     {
         try{
+            int fdim = tension ? 4 : 3;
+            int n_contact_force = fdim * n_contact();
+            int n_support_force = 6 * n_part();
+
             GRBEnv env = GRBEnv(true);
             env.start();
 
@@ -123,9 +258,8 @@ namespace block_stability
 
             GRBVar obj = model.addVar(0, INFINITY, 1, GRB_CONTINUOUS, "obj");
             GRBQuadExpr obj_expr(0);
-            for (int icontact = 0; icontact < contacts_.size(); icontact++)
+            for (int icontact = 0; icontact < contact_points_.size(); icontact++)
             {
-                int fdim = tension ? 4 : 3;
                 int fn = icontact * fdim + fdim - 3;
                 obj_expr += contactForceVars[fn] * contactForceVars[fn];
             }
@@ -137,12 +271,27 @@ namespace block_stability
 
             if (model.get(GRB_IntAttr_Status) == GRB_OPTIMAL)
             {
-                if (tension == false || model.getObjective().getValue() < 1E-6) {
+                double *v = model.get(GRB_DoubleAttr_X, contactForceVars, n_contact_force);
+                result.internal_contact_forces = Eigen::Map<Eigen::VectorXd>(v, n_contact_force);
+                v = model.get(GRB_DoubleAttr_X, supportForceVars, n_support_force);
+                result.support_forces = Eigen::Map<Eigen::VectorXd>(v, n_support_force);
+                result.with_tension = tension;
+                result.contact_points = contact_points_;
+                result.centroid = centroid_;
+                result.gravity_forces = gravity_;
+                if (tension == false || model.getObjective().getValue() < 1E-6)
+                {
                     return true;
                 } else {
                     return false;
                 }
             } else {
+                result.internal_contact_forces = Eigen::VectorXd::Zero(n_contact_force);
+                result.support_forces = Eigen::VectorXd::Zero(n_support_force);
+                result.with_tension = tension;
+                result.contact_points = contact_points_;
+                result.centroid = centroid_;
+                result.gravity_forces = gravity_;
                 return false;
             }
         } catch (GRBException e) {
@@ -191,10 +340,10 @@ namespace block_stability
 
         int fdim = tension == true? 4 : 3;
 
-        for (int icontact = 0; icontact < contacts_.size(); icontact++)
+        for (int icontact = 0; icontact < contact_points_.size(); icontact++)
         {
-            int partIDA = std::get<0>(contacts_[icontact]);
-            int partIDB = std::get<1>(contacts_[icontact]);
+            int partIDA = contact_points_[icontact].partIDA;
+            int partIDB = contact_points_[icontact].partIDB;
             for (int jforce = 0; jforce < fdim; jforce++)
             {
                 if(status_[partIDA] == Uninstalled || status_[partIDB] == Uninstalled) {
@@ -230,8 +379,8 @@ namespace block_stability
         }
 
         int dim = 6;
-        for(int ipart; ipart < n_part(); ipart++) {
-            for(int jdim; jdim < dim; jdim ++) {
+        for(int ipart = 0; ipart < n_part(); ipart++) {
+            for(int jdim = 0; jdim < dim; jdim ++) {
                 int row = ipart * dim + jdim;
                 exprs[row] += supportForces[row] + gravity_[row];
                 model.addConstr(exprs[row], GRB_EQUAL, 0.0);
@@ -243,7 +392,7 @@ namespace block_stability
     {
         //friction
         int fdim = tension ? 4: 3;
-        for (int icontact = 0; icontact < contacts_.size(); icontact++)
+        for (int icontact = 0; icontact < contact_points_.size(); icontact++)
         {
             int fn = icontact * fdim;
             int fr_t1 = icontact * fdim + fdim - 2;
