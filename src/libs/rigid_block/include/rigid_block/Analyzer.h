@@ -37,14 +37,12 @@ namespace rigid_block
     class AnalysisResult
     {
     public:
-
         Eigen::VectorXd internal_contact_forces;
         Eigen::VectorXd support_forces;
         std::vector<ContactPoint> contact_points;
         Eigen::VectorXd gravity_forces;
         std::vector<Eigen::Vector3d> centroid;
         bool with_tension;
-
         std::vector<Arrow> computeArrows(int partID);
     };
 
@@ -69,16 +67,12 @@ namespace rigid_block
         //blocks' centroid
         std::vector<Eigen::Vector3d> centroid_;
 
-        //blocks' status
-        //0 uninstalled
-        //1 installed
-        //2 fixed/grounded
-        std::vector<PartStatus> status_;
-
         // number of part
         int n_part_;
 
         double friction_mu_;
+
+        bool with_tension_ = false;
 
     private:
 
@@ -88,11 +82,10 @@ namespace rigid_block
 
     public:
 
-        Analyzer(int nParts): n_part_(nParts)
+        Analyzer(int nParts, bool with_tension): n_part_(nParts), with_tension_(with_tension)
         {
             mass_.resize(nParts, 0.0);
             centroid_.resize(nParts, Eigen::Vector3d::Zero());
-            status_.resize(nParts, Uninstalled);
         }
 
         Analyzer(const Analyzer &analyzer)
@@ -101,6 +94,7 @@ namespace rigid_block
             mass_ = analyzer.mass_;
             centroid_ = analyzer.centroid_;
             contact_points_ = analyzer.contact_points_;
+            with_tension_ = analyzer.with_tension_;
         }
 
     public:
@@ -115,7 +109,6 @@ namespace rigid_block
 
         ContactPoint contact(int index){return contact_points_.at(index);}
 
-
     public: //check stability
         void updateFrictionCeoff(double mu){friction_mu_ = mu;}
 
@@ -123,29 +116,23 @@ namespace rigid_block
 
         void updatePart(int partID, double mass, Eigen::Vector3d ct);
 
-        void updatePartStatus(int partID, PartStatus status) {
-            if(partID >= 0 && partID < n_part()) {
-                status_[partID] = status;
-            }
-        }
-
-        void updateEquilibriumMatrix(bool tension = true);
+        void updateEquilibriumMatrix();
 
         void updateGravity();
 
-        bool solve(AnalysisResult &result, bool tension = true);
+        double solve(const std::vector<PartStatus> &status, AnalysisResult &result);
 
         void getInternalForcesArrow(AnalysisResult &result);
 
     private: //setup the gurobi solver
 
-        GRBVar *createContactForceVars(GRBModel &model, bool tension = true);
+        GRBVar *createContactForceVars(GRBModel &model, const std::vector<PartStatus> &status);
 
-        GRBVar *createSupportForceVars(GRBModel &model);
+        GRBVar *createSupportForceVars(GRBModel &model, const std::vector<PartStatus> &status);
 
         void setForceEquilibrium(GRBModel &model, GRBVar *contactForce, GRBVar *supportForce);
 
-        void setFrictionCone(GRBModel &model, GRBVar *force, bool tension = true);
+        void setFrictionCone(GRBModel &model, GRBVar *force);
 
         void computeFrictionDir(const Eigen::Vector3d &n, Eigen::Vector3d &t1, Eigen::Vector3d &t2);
     };

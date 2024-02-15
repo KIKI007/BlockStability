@@ -1,4 +1,2 @@
-add_subdirectory(RigidBlock)
-
-
-
+add_subdirectory(rigid_block)
+add_subdirectory(search)

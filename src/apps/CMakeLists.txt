@@ -1,1 +1,2 @@
 add_subdirectory(StructureAnalyzer)
+add_subdirectory(SequenceGenerator)

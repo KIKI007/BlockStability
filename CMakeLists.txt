@@ -36,7 +36,7 @@ function(
     LINK_LIBS #
     COMPILE_DEFINITIONS #
 )
-    add_library(${LIB_NAME} STATIC ${SOURCE})
+    add_library(${LIB_NAME} SHARED ${SOURCE})
     add_library(kiki::${LIB_NAME} ALIAS ${LIB_NAME})
     add_dependencies(${LIB_NAME} ${DEPENDENCY})
     target_include_directories(${LIB_NAME} ${INCLUDE_DIRS})

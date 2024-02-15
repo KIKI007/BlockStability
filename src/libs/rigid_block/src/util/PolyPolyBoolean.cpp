@@ -2,7 +2,7 @@
 // Created by 汪子琦 on 04.09.22.
 //
 
-#include "RigidBlock/util/PolyPolyBoolean.h"
+#include "rigid_block/util/PolyPolyBoolean.h"
 
 namespace rigid_block
 {

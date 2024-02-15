@@ -9,6 +9,7 @@
 #include "util/readOBJ.h"
 #include "Analyzer.h"
 #include "gurobi_c++.h"
+#include <memory>
 
 namespace rigid_block
 {
@@ -55,11 +56,13 @@ namespace rigid_block
 
         std::vector<ContactFace> simplifyContact(const std::vector<Eigen::Vector3d> &points, const std::vector<Eigen::Vector3d> &normals);
 
+        std::vector<Analyzer::PartStatus> getPartStatus();
+
         void addGroundPlane();
 
         void updateGroundBlocks();
 
-        std::shared_ptr<Analyzer> createAnalyzer();
+        std::shared_ptr<Analyzer> createAnalyzer(bool tension);
 
         double computeAvgDiagnalLength();
     };

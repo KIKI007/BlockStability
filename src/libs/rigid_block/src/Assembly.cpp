@@ -2,9 +2,12 @@
 // Created by 汪子琦 on 04.09.22.
 //
 
-#include "RigidBlock/Assembly.h"
-#include "RigidBlock/util/PolyPolyBoolean.h"
-#include "RigidBlock/util/ConvexHull2D.h"
+#include "rigid_block//Assembly.h"
+
+#include <MacTypes.h>
+
+#include "rigid_block/util/PolyPolyBoolean.h"
+#include "rigid_block/util/ConvexHull2D.h"
 
 namespace rigid_block {
     std::vector<ContactFace> Assembly::computeContacts(const std::vector<int> &subPartIDs) {
@@ -187,6 +190,19 @@ namespace rigid_block {
         return contacts;
     }
 
+    std::vector<Analyzer::PartStatus> Assembly::getPartStatus() {
+        std::vector<Analyzer::PartStatus> status;
+        for(int part_id = 0; part_id < blocks_.size(); part_id++) {
+            if(blocks_[part_id]->ground_) {
+                status.push_back(Analyzer::Fixed);
+            }
+            else {
+                status.push_back(Analyzer::Installed);
+            }
+        }
+        return status;
+    }
+
     void Assembly::loadFromFile(std::string filename) {
         readOBJ readObj;
         readObj.loadFromFile(filename);
@@ -256,10 +272,9 @@ namespace rigid_block {
         ground_plane_->ground_ = true;
     }
 
-    std::shared_ptr<Analyzer> Assembly::createAnalyzer()
+    std::shared_ptr<Analyzer> Assembly::createAnalyzer(bool tension)
     {
-        std::shared_ptr<Analyzer> analyzer
-        = std::make_shared<Analyzer>(blocks_.size());
+        std::shared_ptr<Analyzer> analyzer = std::make_shared<Analyzer>(blocks_.size(), tension);
         analyzer->updateFrictionCeoff(friction_mu_);
 
         std::vector<int> partIDs;
@@ -268,12 +283,6 @@ namespace rigid_block {
         for (int ipart = 0; ipart < blocks_.size(); ipart++) {
             partIDs.push_back(ipart);
             analyzer->updatePart(ipart, blocks_[ipart]->volume() / pow(length, 3.0), blocks_[ipart]->centroid());
-            if (blocks_[ipart]->ground_) {
-                analyzer->updatePartStatus(ipart, Analyzer::Fixed);
-            }
-            else {
-                analyzer->updatePartStatus(ipart, Analyzer::Installed);
-            }
         }
 
         std::vector<ContactFace> contacts;

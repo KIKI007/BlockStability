@@ -21,3 +21,13 @@ FetchContent_Declare(
         GIT_TAG        v2.1.0
 )
 FetchContent_MakeAvailable(polyscope)
+
+#------------------------------------------------------------------------------
+# json
+FetchContent_Declare(
+        json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.11.2
+)
+fetch(json)
+add_subdirectory(${json_SOURCE_DIR} json)

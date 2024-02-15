@@ -1,7 +1,7 @@
 //
 // Created by 汪子琦 on 04.09.22.
 //
-#include "RigidBlock/Part.h"
+#include "rigid_block/Part.h"
 #include "iostream"
 
 namespace rigid_block {
@@ -107,7 +107,6 @@ namespace rigid_block {
             minCoord = minCoord.cwiseMin(pt);
             maxCoord = maxCoord.cwiseMax(pt);
         }
-        std::cout << minCoord.transpose() << ", " << maxCoord.transpose() << std::endl;
         return (maxCoord - minCoord).norm() / 2;
     }
 

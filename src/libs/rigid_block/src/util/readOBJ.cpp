@@ -2,7 +2,7 @@
 // Created by 汪子琦 on 05.09.22.
 //
 
-#include "RigidBlock/util/readOBJ.h"
+#include "rigid_block/util/readOBJ.h"
 #include <fstream>
 #include <iostream>
 

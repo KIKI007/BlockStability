@@ -1,4 +1,4 @@
-#include "RigidBlock/Assembly.h"
+#include "rigid_block/Assembly.h"
 #include "polyscope/polyscope.h"
 #include "polyscope/surface_mesh.h"
 #include "polyscope/curve_network.h"
@@ -13,6 +13,7 @@ polyscope::SurfaceMesh *contact_render_obj = nullptr, *contact_with_ground_rende
 static bool show_assembly = true;
 static bool show_contact = false;
 static bool show_contact_ground = false;
+static bool show_check_tension = false;
 static float fr_coeff = 0.5;
 std::shared_ptr<rigid_block::Assembly> blockAssembly;
 
@@ -108,15 +109,11 @@ void checkStability()
     if (blockAssembly)
     {
         blockAssembly->friction_mu_ = fr_coeff;
-        auto analyzer = blockAssembly->createAnalyzer();
+        auto analyzer = blockAssembly->createAnalyzer(show_check_tension);
         rigid_block::AnalysisResult result;
-
-        if (analyzer->solve(result)) {
-            polyscope::info("Equilibrium");
-        } else {
-            polyscope::info("Nonequilibrium");
-
-        }
+        std::vector<rigid_block::Analyzer::PartStatus> status = blockAssembly->getPartStatus();
+        double val = analyzer->solve(status, result);
+        polyscope::info("Stability: \t " + std::to_string(val));
 
         if(arrow_group) {
             polyscope::removeGroup(arrow_group);
@@ -133,7 +130,6 @@ void checkStability()
         arrow_group->setShowChildDetails(false);
 
         auto [bbmin, bbmax] = polyscope::state::boundingBox;
-        std::cout << bbmin.y << ", " << bbmax.y << std::endl;
 
         polyscope::options::groundPlaneHeightFactor = polyscope::absoluteValue(bbmin.y);
     }
@@ -167,6 +163,9 @@ int main()
             {
                 checkStability();
             }
+
+            ImGui::SameLine();
+            ImGui::Checkbox("Tension", &show_check_tension);
 
             if (ImGui::SliderFloat("friction coeff", &fr_coeff, 0, 1)) {
             }

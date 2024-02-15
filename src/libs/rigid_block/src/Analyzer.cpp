@@ -2,9 +2,8 @@
 // Created by 汪子琦 on 05.09.22.
 //
 
-#include "RigidBlock/Analyzer.h"
-
-#include "iostream"
+#include "rigid_block/Analyzer.h"
+#include <iostream>
 
 namespace rigid_block
 {
@@ -155,7 +154,7 @@ namespace rigid_block
         }
     }
 
-    void Analyzer::updateEquilibriumMatrix(bool tension)
+    void Analyzer::updateEquilibriumMatrix()
     {
         for (int ic = 0; ic < contact_points_.size(); ic++)
         {
@@ -171,7 +170,7 @@ namespace rigid_block
             std::vector<Eigen::Vector3d> drts;
 
             //every vector in drts has a corresponding force variable
-            if (tension) drts = {n, -n, t1, t2};
+            if (with_tension_) drts = {n, -n, t1, t2};
             else drts = {n, t1, t2};
 
             for (int iP = 0; iP < 2; iP++)
@@ -229,23 +228,24 @@ namespace rigid_block
         t2.normalize();
     }
 
-    bool Analyzer::solve(AnalysisResult &result, bool tension)
+    double Analyzer::solve(const std::vector<PartStatus> &status, AnalysisResult &result)
     {
         try{
-            int fdim = tension ? 4 : 3;
+            int fdim = with_tension_ ? 4 : 3;
             int n_contact_force = fdim * n_contact();
             int n_support_force = 6 * n_part();
 
             GRBEnv env = GRBEnv(true);
+            env.set(GRB_IntParam_OutputFlag, 0);
             env.start();
 
             GRBModel model = GRBModel(env);
 
             //contact force
-            GRBVar *contactForceVars = createContactForceVars(model, tension);
+            GRBVar *contactForceVars = createContactForceVars(model, status);
 
             //support force
-            GRBVar *supportForceVars = createSupportForceVars(model);
+            GRBVar *supportForceVars = createSupportForceVars(model, status);
 
             //Equilibrium
             setForceEquilibrium(model, contactForceVars, supportForceVars);
@@ -275,24 +275,19 @@ namespace rigid_block
                 result.internal_contact_forces = Eigen::Map<Eigen::VectorXd>(v, n_contact_force);
                 v = model.get(GRB_DoubleAttr_X, supportForceVars, n_support_force);
                 result.support_forces = Eigen::Map<Eigen::VectorXd>(v, n_support_force);
-                result.with_tension = tension;
+                result.with_tension = with_tension_;
                 result.contact_points = contact_points_;
                 result.centroid = centroid_;
                 result.gravity_forces = gravity_;
-                if (tension == false || model.getObjective().getValue() < 1E-6)
+                if (with_tension_ == false)
                 {
-                    return true;
-                } else {
-                    return false;
+                    return 0.0;
                 }
-            } else {
-                result.internal_contact_forces = Eigen::VectorXd::Zero(n_contact_force);
-                result.support_forces = Eigen::VectorXd::Zero(n_support_force);
-                result.with_tension = tension;
-                result.contact_points = contact_points_;
-                result.centroid = centroid_;
-                result.gravity_forces = gravity_;
-                return false;
+                return obj.get(GRB_DoubleAttr_X);
+            }
+            else
+            {
+                return std::numeric_limits<double>::max();
             }
         } catch (GRBException e) {
             std::cout << "Error code = " << e.getErrorCode() << std::endl;
@@ -300,10 +295,10 @@ namespace rigid_block
         } catch (...) {
             std::cout << "Exception during optimization" << std::endl;
         }
-        return false;
+        return std::numeric_limits<double>::max();;
     }
 
-    GRBVar *Analyzer::createSupportForceVars(GRBModel &model)
+    GRBVar *Analyzer::createSupportForceVars(GRBModel &model, const std::vector<PartStatus> &status)
     {
         std::vector<double> lb, ub;
         std::vector<char> types;
@@ -314,7 +309,7 @@ namespace rigid_block
         {
             for(int jdim = 0; jdim < dim; jdim++)
             {
-                if(status_[ipart] != Installed) {
+                if(status[ipart] != Installed) {
                     lb.push_back(-INFINITY);
                     ub.push_back(INFINITY);
                 }
@@ -331,14 +326,14 @@ namespace rigid_block
     }
 
 
-    GRBVar *Analyzer::createContactForceVars(GRBModel &model, bool tension)
+    GRBVar *Analyzer::createContactForceVars(GRBModel &model, const std::vector<PartStatus> &status)
     {
         std::vector<double> lb, ub;
         std::vector<char> types;
         std::vector<double> weights;
         std::vector<std::string> names;
 
-        int fdim = tension == true? 4 : 3;
+        int fdim = (with_tension_ == true? 4 : 3);
 
         for (int icontact = 0; icontact < contact_points_.size(); icontact++)
         {
@@ -346,7 +341,7 @@ namespace rigid_block
             int partIDB = contact_points_[icontact].partIDB;
             for (int jforce = 0; jforce < fdim; jforce++)
             {
-                if(status_[partIDA] == Uninstalled || status_[partIDB] == Uninstalled) {
+                if(status[partIDA] == Uninstalled || status[partIDB] == Uninstalled) {
                     lb.push_back(0);
                     ub.push_back(0);
                 }
@@ -388,10 +383,10 @@ namespace rigid_block
         }
     }
 
-    void Analyzer::setFrictionCone(GRBModel &model, GRBVar *forceVars, bool tension)
+    void Analyzer::setFrictionCone(GRBModel &model, GRBVar *forceVars)
     {
         //friction
-        int fdim = tension ? 4: 3;
+        int fdim = with_tension_ ? 4: 3;
         for (int icontact = 0; icontact < contact_points_.size(); icontact++)
         {
             int fn = icontact * fdim;
