@@ -11,7 +11,7 @@ list(
     APPEND
     CRL_TARGET_DEPENDENCIES #
     "kiki::rigid_block" #
-    "polyscope"
+    "kiki::render"
 )
 
 list(APPEND CRL_TARGET_INCLUDE_DIRS #
@@ -21,11 +21,10 @@ list(APPEND CRL_TARGET_INCLUDE_DIRS #
 list(APPEND CRL_TARGET_LINK_LIBS #
     PUBLIC
     "kiki::rigid_block" #
-    "polyscope"
+    "kiki::render"
 )
 
 list(APPEND CRL_COMPILE_DEFINITIONS #
-     PUBLIC "CRL_DATA_FOLDER=${CRL_DATA_FOLDER}" #
      PUBLIC "ROBOCRAFT_DATA_FOLDER=${ROBOCRAFT_DATA_FOLDER}" #
 )
 

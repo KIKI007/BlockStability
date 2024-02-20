@@ -1,0 +1,9 @@
+# CAD Exchanger 3.5.3 (cadexchanger.com)
+# Material Count: 2
+
+newmtl DefaultMaterial
+Ns 1000.0
+Ka 0.2 0.2 0.2
+Kd 0.7 0.7 0.7
+Ks 0.7 0.7 0.7
+Ke 0.000000 0.000000 0.000000

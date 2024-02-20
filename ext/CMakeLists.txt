@@ -31,3 +31,13 @@ FetchContent_Declare(
 )
 fetch(json)
 add_subdirectory(${json_SOURCE_DIR} json)
+
+#------------------------------------------------------------------------------
+# json
+FetchContent_Declare(
+        tinyxml2
+        GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
+        GIT_TAG v10.0.0
+)
+fetch(tinyxml2)
+add_subdirectory(${tinyxml2_SOURCE_DIR} tinyxml2)

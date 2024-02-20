@@ -66,7 +66,6 @@ namespace rigid_block
             }
         }
 
-
         Eigen::Vector3d ct = centroid[partID];
         Eigen::Vector3d g = gravity_forces.segment(partID * 6, 3);
         Eigen::Vector3d sf = support_forces.segment(partID * 6, 3);
@@ -79,10 +78,7 @@ namespace rigid_block
             support_pts.push_back(ct + sf);
         }
 
-
         std::vector<Arrow> result;
-
-
         {
             Arrow compression;
             compression.from_points(compression_pts);
@@ -210,13 +206,14 @@ namespace rigid_block
         gravity_ = Eigen::VectorXd::Zero(n_part() * 6);
         for (int part_id = 0; part_id < n_part(); part_id++)
         {
-            Eigen::Vector3d force(0, -mass_[part_id], 0);
+            Eigen::Vector3d force(0, 0, -mass_[part_id]);
             Eigen::Vector3d r = centroid_[part_id];
             Eigen::Vector3d torque = r.cross(force);
             gravity_.segment(part_id * 6, 3) = force;
             gravity_.segment(part_id * 6 + 3, 3) = torque;
         }
     }
+
 
     void Analyzer::computeFrictionDir(const Eigen::Vector3d &n, Eigen::Vector3d &t1, Eigen::Vector3d &t2) {
         t1 = n.cross(Eigen::Vector3d(1, 0, 0));
@@ -312,7 +309,7 @@ namespace rigid_block
                 if(status[ipart] != Installed) {
                     lb.push_back(-INFINITY);
                     ub.push_back(INFINITY);
-                }
+               }
                 else {
                     lb.push_back(0);
                     ub.push_back(0);

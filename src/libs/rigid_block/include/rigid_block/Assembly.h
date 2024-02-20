@@ -33,7 +33,7 @@ namespace rigid_block
 
         const double error_small_distance_ = 1E-2;
 
-        double friction_mu_;
+        float friction_coeff_ = 0.5;
 
     public:
 

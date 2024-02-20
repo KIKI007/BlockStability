@@ -1,0 +1,167 @@
+<robot name="irb4600" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <link name="base_link">
+      <collision name="collision">
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Base.obj"/>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Base.obj" scale="0.001"/>
+        </geometry>
+        <material name="grey">
+          <color rgba="0.7 0.7 0.9 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <link name="link_1">
+      <collision name="collision">
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link1.obj"/>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <origin xyz="0.0 0 -0.190" rpy="0.0 0.0 0.0" />
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link1.obj" scale="0.001"/>
+        </geometry>
+        <material name="grey">
+          <color rgba="0.7 0.7 0.9 1.0"/>
+        </material>      </visual>
+    </link>
+
+    <link name="link_2">
+      <collision name="collision">
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link2.obj"/>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <origin xyz="-0.175 0 -0.495" rpy="0.0 0.0 0.0" />
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link2.obj" scale="0.001"/>
+        </geometry>
+        <material name="grey">
+          <color rgba="0.7 0.7 0.9 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <link name="link_3">
+      <collision name="collision">
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link3.obj"/>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <origin xyz="-0.175 0 -1.590" rpy="0.0 0.0 0.0" />
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link3.obj" scale="0.001"/>
+        </geometry>
+        <material name="grey">
+          <color rgba="0.7 0.7 0.9 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <link name="link_4">
+      <collision name="collision">
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link4.obj"/>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <origin xyz="-0.515 0 -1.765" rpy="0.0 0.0 0.0" />
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link4.obj" scale="0.001"/>
+        </geometry>
+        <material name="grey">
+          <color rgba="0.7 0.7 0.9 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <link name="link_5">
+      <collision name="collision">
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link5.obj"/>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <origin xyz="-1.445 0 -1.765" rpy="0.0 0.0 0.0" />
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link5.obj" scale="0.001"/>
+        </geometry>
+        <material name="grey">
+          <color rgba="0.7 0.7 0.9 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <link name="link_6">
+      <collision name="collision">
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link6.obj"/>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <origin xyz="-1.51 0 -1.765" rpy="0.0 0.0 0.0" />
+        <geometry>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link6.obj" scale="0.001"/>
+        </geometry>
+        <material name="grey">
+          <color rgba="0.7 0.7 0.9 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <joint type="revolute" name="joint_1">
+      <origin xyz="0 0 0.190" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <parent link="base_link"/>
+      <child link="link_1"/>
+      <limit effort="0" lower="-3.14159" upper="3.14159" velocity="3.05433"/>
+    </joint>
+
+    <joint type="revolute" name="joint_2">
+      <origin xyz="0.175 0 0.305" rpy="0 0 0"/>
+      <axis xyz="0 -1 0"/>
+      <parent link="link_1"/>
+      <child link="link_2"/>
+      <limit effort="0" lower="-1.5708" upper="2.61799" velocity="3.05433"/>
+    </joint>
+
+    <joint type="revolute" name="joint_3">
+      <origin xyz="0 0 1.095" rpy="0 0 0"/>
+      <axis xyz="0 -1 0"/>
+      <parent link="link_2"/>
+      <child link="link_3"/>
+      <limit effort="0" lower="-3.14159" upper="1.309" velocity="3.05433"/>
+    </joint>
+
+    <joint type="revolute" name="joint_4">
+      <origin xyz="0.34 0 0.175" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <parent link="link_3"/>
+      <child link="link_4"/>
+      <limit effort="0" lower="-6.98132" upper="6.98132" velocity="4.36332"/>
+    </joint>
+
+    <joint type="revolute" name="joint_5">
+      <origin xyz="0.93 0 0" rpy="0 0 0"/>
+      <axis xyz="0 -1 0"/>
+      <parent link="link_4"/>
+      <child link="link_5"/>
+      <limit effort="0" lower="-2.18166" upper="2.0944" velocity="4.36332"/>
+    </joint>
+
+    <joint type="revolute" name="joint_6">
+      <origin xyz="0.065 0 0" rpy="0 0 0"/>
+      <axis xyz="1 0 0"/>
+      <parent link="link_5"/>
+      <child link="link_6"/>
+      <limit effort="0" lower="-1.5708" upper="1.5708" velocity="6.28319"/>
+    </joint>
+</robot>

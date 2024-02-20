@@ -1,2 +1,3 @@
 add_subdirectory(StructureAnalyzer)
 add_subdirectory(SequenceGenerator)
+add_subdirectory(RobotViewer)

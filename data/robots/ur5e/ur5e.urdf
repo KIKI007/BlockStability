@@ -1,0 +1,133 @@
+<robot name="ur5e" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <link name="base_link" >
+      <visual>
+        <origin xyz="0.0 0.0 0.0" rpy="1.5708 0.0 0.0" />
+        <geometry>
+          <mesh filename="meshes/eSeries_UR5e_baseNoCable.obj" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="shoulder_pan_joint" type="revolute">
+      <parent link="base_link" />
+      <child link = "shoulder_link" />
+      <origin xyz="0.0 0.0 0.1" rpy="1.5708 0.0 0.0" />
+      <axis xyz="0 1 0" />
+      <limit lower="-6.2832" upper="6.2832" effort="150.0" velocity="3.14"/>
+    </joint>
+
+    <link name="shoulder_link">
+      <visual>
+        <origin xyz="0.0 -0.1 0.0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="meshes/eSeries_UR5e_link1.obj" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="shoulder_lift_joint" type="revolute">
+      <parent link="shoulder_link" />
+      <child link = "upper_arm_link" />
+      <origin xyz="0 0.063 0.076" rpy="0.0 0.0 0.0" />
+      <axis xyz="0 0 1" />
+      <limit lower="-6.2832" upper="6.2832" effort="150.0" velocity="3.14"/>
+    </joint>
+
+    <link name="upper_arm_link">
+      <visual>
+        <origin xyz="0.0 -0.163 -0.076" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="meshes/eSeries_UR5e_link2.obj" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="elbow_joint" type="revolute">
+      <parent link="upper_arm_link" />
+      <child link = "forearm_link" />
+      <origin xyz="0 0.425 0" rpy="0.0 0.0 0.0" />
+      <axis xyz="0 0 1" />
+      <limit lower="-3.1416" upper="3.1416" effort="150.0" velocity="3.14"/>
+    </joint>
+
+    <link name="forearm_link">
+      <visual>
+        <origin xyz="0.0 -0.588 -0.076" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="meshes/eSeries_UR5e_link3.obj" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="wrist_1_joint" type="revolute">
+      <parent link="forearm_link" />
+      <child link = "wrist_1_link" />
+      <origin xyz="0 0.392 -0.026" rpy="0.0 0.0 0.0" />
+      <axis xyz="0 0 1" />
+      <limit lower="-6.2832" upper="6.2832" effort="28.0" velocity="6.28"/>
+    </joint>
+
+    <link name="wrist_1_link">
+      <visual>
+        <origin xyz="0.0 -0.980 -0.050" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="meshes/eSeries_UR5e_link4.obj" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="wrist_2_joint" type="revolute">
+      <parent link="wrist_1_link" />
+      <child link = "wrist_2_link" />
+      <origin xyz="0 0.045 0.080" rpy="0.0 0.0 0.0" />
+      <axis xyz="0 1 0" />
+      <limit lower="-6.2832" upper="6.2832" effort="28.0" velocity="6.28"/>
+    </joint>
+
+    <link name="wrist_2_link">
+      <visual>
+        <origin xyz="0.0 -1.025 -0.130" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="meshes/eSeries_UR5e_link5.obj" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+    </link>
+
+    <joint name="wrist_3_joint" type="revolute">
+      <parent link="wrist_2_link" />
+      <child link = "wrist_3_link" />
+      <origin xyz="0 0.055 0.050" rpy="0.0 0.0 0.0" />
+      <axis xyz="0 0 1" />
+      <limit lower="-6.2832" upper="6.2832" effort="28.0" velocity="6.28"/>
+    </joint>
+
+    <link name="wrist_3_link">
+      <visual>
+        <origin xyz="0.0 -1.080 -0.180" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="meshes/eSeries_UR5e_link6.obj" />
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+    </link>
+</robot>

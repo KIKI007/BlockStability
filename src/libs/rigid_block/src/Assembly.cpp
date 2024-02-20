@@ -208,7 +208,7 @@ namespace rigid_block {
         readObj.loadFromFile(filename);
         for (int id = 0; id < readObj.Vs_.size(); id++) {
             std::shared_ptr<Part> block = std::make_shared<Part>();
-            block->V_ = readObj.Vs_[id];
+            block->V_ = readObj.Vs_[id] * 2;
             block->F_ = readObj.Fs_[id];
             block->N_ = readObj.Ns_[id];
             block->partID_ = id;
@@ -232,7 +232,8 @@ namespace rigid_block {
 
     void Assembly::addGroundPlane() {
         Eigen::Vector3d minCoord, maxCoord;
-        for (int id = 0; id < blocks_.size(); id++) {
+        for (int id = 0; id < blocks_.size(); id++)
+            {
             for (int kd = 0; kd < 3; kd++) {
                 Eigen::VectorXd col = blocks_[id]->V_.col(kd);
 
@@ -244,7 +245,7 @@ namespace rigid_block {
             }
         }
 
-        double height = minCoord[1];
+        double height = minCoord[2];
 
         Eigen::Vector3d center = (minCoord + maxCoord) / 2;
         Eigen::Vector3d size = (maxCoord - minCoord) / 2;
@@ -254,10 +255,10 @@ namespace rigid_block {
 
         ground_plane_ = std::make_shared<Part>();
         ground_plane_->V_ = Eigen::MatrixXd(4, 3);
-        ground_plane_->V_ << minCoord[0], height, minCoord[2],
-                minCoord[0], height, maxCoord[2],
-                maxCoord[0], height, maxCoord[2],
-                maxCoord[0], height, minCoord[2];
+        ground_plane_->V_ << minCoord[0], minCoord[1], height,
+                maxCoord[0], minCoord[1], height,
+                maxCoord[0], maxCoord[1], height,
+                minCoord[0], maxCoord[1], height;
 
         ground_plane_->F_ = Eigen::MatrixXi(2, 3);
         ground_plane_->F_ << 0, 1, 2,
@@ -275,14 +276,14 @@ namespace rigid_block {
     std::shared_ptr<Analyzer> Assembly::createAnalyzer(bool tension)
     {
         std::shared_ptr<Analyzer> analyzer = std::make_shared<Analyzer>(blocks_.size(), tension);
-        analyzer->updateFrictionCeoff(friction_mu_);
+        analyzer->updateFrictionCeoff(friction_coeff_);
 
         std::vector<int> partIDs;
         double length = computeAvgDiagnalLength();
 
         for (int ipart = 0; ipart < blocks_.size(); ipart++) {
             partIDs.push_back(ipart);
-            analyzer->updatePart(ipart, blocks_[ipart]->volume() / pow(length, 3.0), blocks_[ipart]->centroid());
+            analyzer->updatePart(ipart, blocks_[ipart]->volume() / pow(length, 3.0) / 16, blocks_[ipart]->centroid());
         }
 
         std::vector<ContactFace> contacts;
@@ -306,5 +307,6 @@ namespace rigid_block {
         }
         length /= blocks_.size();
         return length;
+
     }
 }

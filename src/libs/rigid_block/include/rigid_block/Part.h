@@ -43,6 +43,8 @@ namespace rigid_block {
 
         int nF(){return F_.rows();}
 
+
+
         Eigen::Vector3d color() {
             if(ground_) {
                 return  Eigen::Vector3d(0, 0, 0);
