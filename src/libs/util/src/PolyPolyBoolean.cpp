@@ -2,9 +2,9 @@
 // Created by 汪子琦 on 04.09.22.
 //
 
-#include "rigid_block/util/PolyPolyBoolean.h"
+#include "util/PolyPolyBoolean.h"
 
-namespace rigid_block
+namespace util
 {
 void PolyPolyBoolean::computePolygonsUnion(PolyPolyBoolean::PolysVector3 &polys,
                                            PolyPolyBoolean::PolysVector3 &polysUnion) {

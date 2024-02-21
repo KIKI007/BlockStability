@@ -72,7 +72,7 @@ namespace render {
     }
 
     void RobotRender::compute() {
-        robot::Transformation EE;
+        util::Transform EE;
         EE.xyz = ee_xyz_.cast<double>();
         EE.rpy = ee_rpy_.cast<double>();
         std::vector<Eigen::VectorXd> solutions = robot_->inverseEE(EE);
@@ -86,7 +86,7 @@ namespace render {
         j_.resize(6);
         j_.setZero();
 
-        robot::Transformation EE = robot_->forwardEE(j_.cast<double>());
+        util::Transform EE = robot_->forwardEE(j_.cast<double>());
         ee_xyz_ = EE.xyz.cast<float>();
         ee_rpy_ = EE.rpy.cast<float>();
 
@@ -135,7 +135,7 @@ namespace render {
 
     void RobotRender::update_ee()
     {
-        robot::Transformation EE = robot_->forwardEE(j_.cast<double>());
+        util::Transform EE = robot_->forwardEE(j_.cast<double>());
 
         for(int id = 0; id < 3; id++)
         {

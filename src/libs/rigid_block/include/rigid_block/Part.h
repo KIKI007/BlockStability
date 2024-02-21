@@ -6,7 +6,7 @@
 #define PART_H
 #include "Eigen/Dense"
 #include <vector>
-
+#include "util/Transform.h"
 namespace rigid_block {
     class Part {
     public:
@@ -43,7 +43,7 @@ namespace rigid_block {
 
         int nF(){return F_.rows();}
 
-
+        std::vector<util::Transform> eeAnchor();
 
         Eigen::Vector3d color() {
             if(ground_) {

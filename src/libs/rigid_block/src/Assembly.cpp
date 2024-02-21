@@ -6,8 +6,8 @@
 
 #include <MacTypes.h>
 
-#include "rigid_block/util/PolyPolyBoolean.h"
-#include "rigid_block/util/ConvexHull2D.h"
+#include "util/PolyPolyBoolean.h"
+#include "util/ConvexHull2D.h"
 
 namespace rigid_block {
     std::vector<ContactFace> Assembly::computeContacts(const std::vector<int> &subPartIDs) {
@@ -29,7 +29,7 @@ namespace rigid_block {
 
     std::vector<ContactFace> Assembly::computeContacts(std::shared_ptr<Part> block1,
                                                    std::shared_ptr<Part> block2) {
-        PolyPolyBoolean boolean;
+        util::PolyPolyBoolean boolean;
 
         std::vector<Eigen::Vector3d> points;
         std::vector<Eigen::Vector3d> normals;
@@ -46,12 +46,12 @@ namespace rigid_block {
                 //compute the intersection area, or the contact area
                 if ((n1_i + n2_j).norm() <= error_small_normal_
                     && abs((p2_j - p1_i).dot(n1_i)) <= error_small_distance_) {
-                    PolyPolyBoolean::PolyVector3 poly1_i = block1->face(f1_i);
-                    PolyPolyBoolean::PolyVector3 poly2_j = block2->face(f2_j);
-                    PolyPolyBoolean::PolysVector3 outs;
+                    util::PolyPolyBoolean::PolyVector3 poly1_i = block1->face(f1_i);
+                    util::PolyPolyBoolean::PolyVector3 poly2_j = block2->face(f2_j);
+                    util::PolyPolyBoolean::PolysVector3 outs;
                     boolean.computePolygonsIntersection(poly1_i, poly2_j, outs);
 
-                    for (PolyPolyBoolean::PolyVector3 out: outs)
+                    for (util::PolyPolyBoolean::PolyVector3 out: outs)
                     {
                         for (int kd = 0; kd < out.size(); kd++)
                         {
@@ -204,7 +204,7 @@ namespace rigid_block {
     }
 
     void Assembly::loadFromFile(std::string filename) {
-        readOBJ readObj;
+        util::readOBJ readObj;
         readObj.loadFromFile(filename);
         for (int id = 0; id < readObj.Vs_.size(); id++) {
             std::shared_ptr<Part> block = std::make_shared<Part>();

@@ -26,7 +26,7 @@ namespace render {
 
         Eigen::Vector3f ee_rpy_;
 
-        int iksol_ = 0;
+        int iksol_ = 2;
 
         std::shared_ptr<robot::Robot> robot_;
 

@@ -18,7 +18,7 @@ list(
         APPEND
         CRL_TARGET_DEPENDENCIES #
         "Eigen3::Eigen"
-        "tinyxml2::tinyxml2"
+        "util"
 )
 
 # target include dirs
@@ -31,7 +31,7 @@ list(
         CRL_TARGET_LINK_LIBS #
         PUBLIC
         "Eigen3::Eigen"
-        "tinyxml2::tinyxml2"
+        "util"
 )
 
 # compile definitions

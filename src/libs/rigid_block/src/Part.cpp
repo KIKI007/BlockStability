@@ -3,7 +3,7 @@
 //
 #include "rigid_block/Part.h"
 #include "iostream"
-
+#include <algorithm>
 namespace rigid_block {
     double Part::volume() {
         double volume = 0;
@@ -108,6 +108,40 @@ namespace rigid_block {
             maxCoord = maxCoord.cwiseMax(pt);
         }
         return (maxCoord - minCoord).norm() / 2;
+    }
+
+    std::vector<util::Transform> Part::eeAnchor() {
+        std::vector<util::Transform> ts;
+        std::vector<double> areas;
+        for(int id = 0; id < F_.rows(); id++)
+        {
+            Eigen::Vector3d p0 = V_.row(F_(id, 0));
+            Eigen::Vector3d p1 = V_.row(F_(id, 1));
+            Eigen::Vector3d p2 = V_.row(F_(id, 2));
+            Eigen::Vector3d ct = (p0 + p1 + p2) / 3;
+            Eigen::Vector3d n = -(p1 - p0).cross(p2 - p0); n.normalize();
+
+            Eigen::Vector3d yaxis = Eigen::Vector3d(1, 0, 0).cross(n);
+            if(yaxis.norm() < 1E-6) yaxis = Eigen::Vector3d(0, 1, 0).cross(n);
+            yaxis.normalize();
+            Eigen::Vector3d xaxis = yaxis.cross(n); xaxis.normalize();
+
+            Eigen::Matrix3d rot; rot.setZero();
+            rot.col(0) = n;
+            rot.col(1) = xaxis;
+            rot.col(2) = yaxis;
+
+            util::Transform t;
+            t.from_rot(rot);
+            t.xyz = ct;
+            ts.push_back(t);
+            areas.push_back((p1 - p0).cross(p2 - p0).norm());
+        }
+        auto it = std::max_element(areas.begin(), areas.end());
+        util::Transform t = ts[it - areas.begin()];
+        ts.clear();
+        ts.push_back(t);
+        return ts;
     }
 
 }

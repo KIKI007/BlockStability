@@ -1,33 +1,29 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(rigid_block)
+project(util)
 
 set(CRL_TARGET_NAME ${PROJECT_NAME})
 
 file(
         GLOB
         CRL_SOURCES #
-        "${CMAKE_CURRENT_SOURCE_DIR}/include/block/*.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/include/block/util/*.h" #
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/util/*.cpp"#
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/*.h" #
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" #
 )
-
-find_package(GUROBI REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-# dependencies
+# basic dependencies
 list(
         APPEND
         CRL_TARGET_DEPENDENCIES #
         "Eigen3::Eigen"
-        "util"
+        "tinyxml2::tinyxml2"
 )
 
 # target include dirs
 list(APPEND CRL_TARGET_INCLUDE_DIRS #
-     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
-     PUBLIC "${GUROBI_INCLUDE_DIRS}")
+        PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
 
 # target link libs
 list(
@@ -36,19 +32,13 @@ list(
         PUBLIC
         "Eigen3::Eigen"
         PUBLIC
-        "util"
-        PUBLIC
-        "${GUROBI_LIBRARY}"
-        PUBLIC
-        "${GUROBI_CXX_LIBRARY}"
+        "tinyxml2::tinyxml2"
 )
 
 # compile definitions
-list(
-        APPEND
+list(APPEND
         CRL_COMPILE_DEFINITIONS #
-        PUBLIC
-        "CRL_DATA_FOLDER=${CRL_DATA_FOLDER}" #
+        ""
 )
 
 # create target
@@ -58,5 +48,5 @@ create_library(
         "${CRL_TARGET_DEPENDENCIES}" #
         "${CRL_TARGET_INCLUDE_DIRS}" #
         "${CRL_TARGET_LINK_LIBS}" #
-        "${CRL_COMPILE_DEFINITIONS}" #
+        "${CRL_COMPILE_DEFINITIONS}"
 )

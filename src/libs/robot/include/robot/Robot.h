@@ -7,27 +7,13 @@
 
 #include "Eigen/Dense"
 #include "tinyxml2.h"
-#include "util.h"
+#include "util/readOBJ.h"
 #include "ikfast.h"
-#define IKFAST_HAS_LIBRARY
+#include "util/Transform.h"
 
+#define IKFAST_HAS_LIBRARY
 namespace robot
 {
-    struct Transformation
-    {
-        Eigen::Vector3d rpy = Eigen::Vector3d(0, 0, 0);
-        Eigen::Vector3d xyz = Eigen::Vector3d(0, 0, 0);
-
-        Eigen::Matrix4d mat() const;
-
-        Eigen::Matrix3d rot() const;
-
-        void from_rot(const Eigen::Matrix3d &rot);
-
-        Transformation(){}
-        Transformation(tinyxml2::XMLElement *node);
-    };
-
     struct RobotJoint;
 
     struct RobotLink
@@ -38,7 +24,7 @@ namespace robot
         Eigen::MatrixXd visual_meshV;
         Eigen::MatrixXi visual_meshF;
 
-        Transformation transf;
+        util::Transform transf;
         std::weak_ptr<RobotJoint> parent_joint;
         std::weak_ptr<RobotJoint> child_joint;
 
@@ -47,7 +33,7 @@ namespace robot
     struct RobotJoint
     {
         std::string name;
-        Transformation transf;
+        util::Transform transf;
         Eigen::Vector3d axis_xyz;
         std::weak_ptr<RobotLink> parent_link;
         std::weak_ptr<RobotLink> child_link;
@@ -58,7 +44,7 @@ namespace robot
     {
     public:
 
-        Transformation baseT_, eeT_;
+        util::Transform baseT_, eeT_;
 
         Eigen::MatrixXd joint_range_;
 
@@ -88,9 +74,9 @@ namespace robot
 
     public:
 
-        Transformation forwardEE(const Eigen::VectorXd &j);
+        util::Transform forwardEE(const Eigen::VectorXd &j);
 
-        std::vector<Eigen::VectorXd> inverseEE(const Transformation &transf);
+        std::vector<Eigen::VectorXd> inverseEE(const util::Transform &transf);
     };
 
 }

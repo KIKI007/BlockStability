@@ -2,27 +2,12 @@
 // Created by 汪子琦 on 05.09.22.
 //
 
-#include "rigid_block/util/readOBJ.h"
+#include "util/readOBJ.h"
 #include <fstream>
 #include <iostream>
 
-namespace rigid_block {
-    void readOBJ::split(std::vector<std::string> &words, const std::string &line, const char &separator) {
-        int prev_it = 0;
-        int it = 0;
-        for (it = 0; it < line.size(); it++) {
-            if (line[it] == separator) {
-                std::string substr = line.substr(prev_it, it - prev_it);
-                words.push_back(substr);
-                prev_it = it + 1;
-            }
-        }
-        if (prev_it != it) {
-            std::string substr = line.substr(prev_it, it - prev_it);
-            words.push_back(substr);
-        }
-    }
-
+namespace util
+{
     void readOBJ::loadFromFile(std::string filename) {
         Vs_.clear();
         Fs_.clear();
@@ -35,8 +20,7 @@ namespace rigid_block {
         if (fin.is_open()) {
             std::string line;
             while (std::getline(fin, line)) {
-                std::vector<std::string> words;
-                split(words, line, ' ');
+                std::vector<std::string> words = split(line, ' ');
                 if (words.empty())
                     continue;
 
@@ -59,8 +43,7 @@ namespace rigid_block {
     }
 
     void readOBJ::addVertex(const std::string &line, std::vector<Eigen::Vector3d> &vV) {
-        std::vector<std::string> words;
-        split(words, line, ' ');
+        std::vector<std::string> words = split(line, ' ');
 
         Eigen::Vector3d pt;
         for (int id = 1; id < words.size() && id <= 3; id++) {
@@ -70,8 +53,7 @@ namespace rigid_block {
     }
 
     void readOBJ::addNormal(const std::string &line, std::vector<Eigen::Vector3d> &vN) {
-        std::vector<std::string> words;
-        split(words, line, ' ');
+        std::vector<std::string> words = split(line, ' ');
         Eigen::Vector3d normal;
         for (int id = 1; id < words.size() && id <= 3; id++) {
             normal(id - 1) = std::atof(words[id].c_str());
@@ -80,13 +62,12 @@ namespace rigid_block {
     }
 
     void readOBJ::addFace(const std::string &line, std::vector<Eigen::Vector3i> &vF) {
-        std::vector<std::string> fi;
-        split(fi, line, ' ');
+        std::vector<std::string> fi = split(line, ' ');
 
         std::vector<int> fIndices;
         for (int id = 1; id < fi.size(); id++) {
-            std::vector<std::string> fij;
-            split(fij, fi[id], ' ');
+            std::vector<std::string> fij = split(fi[id], '/');
+
             int fIndex = std::atoi(fij[0].c_str()) - 1 - vCount;
             fIndices.push_back(fIndex);
         }

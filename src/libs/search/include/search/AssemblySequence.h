@@ -16,6 +16,8 @@ struct AssemblyStep {
 public:
     std::vector<int> installPartIDs_;
     std::vector<int> holdPartIDs_;
+    std::vector<int> boundaryPartIDs_;
+    std::vector<int> actors_;
 
 public:
 //    std::vector<Eigen::Vector3d> partDrts;

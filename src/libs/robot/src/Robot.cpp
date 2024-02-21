@@ -4,7 +4,7 @@
 
 #include "robot/Robot.h"
 #include <iostream>
-#include "robot/readOBJ.h"
+#include "util/readOBJ.h"
 #include "robot/ikfast.h"
 #include <memory>
 
@@ -16,38 +16,6 @@ robot::Robot::Robot(std::string name) {
     doc.LoadFile(robot_str.c_str());
     load(robot_folder, doc);
 }
-
-Eigen::Matrix3d robot::Transformation::rot() const
-{
-    auto q = Eigen::AngleAxisd(rpy.x(), Eigen::Vector3d::UnitX())
-   * Eigen::AngleAxisd(rpy.y(), Eigen::Vector3d::UnitY())
-   * Eigen::AngleAxisd(rpy.z(), Eigen::Vector3d::UnitZ());
-    return q.toRotationMatrix();
-}
-
-void robot::Transformation::from_rot(const Eigen::Matrix3d &rot) {
-    rpy = rot.eulerAngles(0, 1, 2);
-}
-
-Eigen::Matrix4d robot::Transformation::mat() const
-{
-    Eigen::Matrix4d T;
-    T.setIdentity();
-    T.block(0, 0, 3, 3) = rot();
-    T.block(0, 3, 3, 1) = xyz;
-    return T;
-}
-
-robot::Transformation::Transformation(tinyxml2::XMLElement *node) {
-    if(node) {
-        std::string rpy_text = node->Attribute("rpy");
-        std::string xyz_text = node->Attribute("xyz");
-        std::vector<std::string> rpy_data, xyz_data;
-        rpy = toVec(rpy_text);
-        xyz = toVec(xyz_text);
-    }
-}
-
 
 void robot::Robot::forward(const Eigen::VectorXd &joint_angle, std::vector<Eigen::Matrix4d> &jointT, std::vector<Eigen::Matrix4d> &linkT)
 {
@@ -89,7 +57,7 @@ void robot::Robot::load(const std::string &folder_name, tinyxml2::XMLDocument &r
             double scale = std::atof(scale_text.c_str());
 
             std::string filename = folder_name + "/" + mesh_name;
-            readOBJ reader;
+            util::readOBJ reader;
             reader.loadFromFile(filename);
 
             std::shared_ptr<RobotLink> link = std::make_shared<RobotLink>();
@@ -98,7 +66,7 @@ void robot::Robot::load(const std::string &folder_name, tinyxml2::XMLDocument &r
                 link->visual_meshF = reader.Fs_.front();
             }
             link->name = name;
-            link->transf = Transformation (visual_node->FirstChildElement("origin"));
+            link->transf = util::Transform (visual_node->FirstChildElement("origin"));
             links_.push_back(link);
         }
         else if(tag == "joint")
@@ -116,8 +84,8 @@ void robot::Robot::load(const std::string &folder_name, tinyxml2::XMLDocument &r
             joint->parent_link.lock()->child_joint = joint;
             joint->child_link.lock()->parent_joint = joint;
 
-            joint->transf = Transformation(child->FirstChildElement("origin"));
-            joint->axis_xyz = toVec(child->FirstChildElement("axis")->Attribute("xyz"));
+            joint->transf = util::Transform(child->FirstChildElement("origin"));
+            joint->axis_xyz = util::toVec(child->FirstChildElement("axis")->Attribute("xyz"));
 
             joints_.push_back(joint);
         }
@@ -137,7 +105,7 @@ std::shared_ptr<robot::RobotLink> robot::Robot::findLink(std::string name) {
     return nullptr;
 }
 
-robot::Transformation robot::Robot::forwardEE(const Eigen::VectorXd &j)
+util::Transform robot::Robot::forwardEE(const Eigen::VectorXd &j)
 {
     Eigen::Vector3d EEpos; EEpos.setZero();
     Eigen::Matrix<double, 3, 3, Eigen::RowMajor> EErot; EErot.setZero();
@@ -147,17 +115,17 @@ robot::Transformation robot::Robot::forwardEE(const Eigen::VectorXd &j)
     EE.block(0, 3, 3, 1) = EEpos;
     EE.block(0, 0, 3, 3) = EErot;
 
-    //multiply base transformation
+    //multiply base util::Transform
     EE = baseT_.mat() * EE * eeT_.mat();
 
-    Transformation transf;
+    util::Transform transf;
     transf.xyz = EE.block(0, 3, 3, 1);
     transf.from_rot(EE.block(0, 0, 3, 3));
 
     return transf;
 }
 
-std::vector<Eigen::VectorXd> robot::Robot::inverseEE(const Transformation &transf)
+std::vector<Eigen::VectorXd> robot::Robot::inverseEE(const util::Transform &transf)
 {
     ikfast::IkSolutionList<double> solutions;
     Eigen::Matrix4d EE = baseT_.mat().inverse() * transf.mat() * eeT_.mat().inverse();

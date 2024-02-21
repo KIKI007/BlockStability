@@ -87,8 +87,14 @@ void StateGraphHolding::getSolution(std::vector<PtrN> nodes, AssemblySequence &s
         {
             step.installPartIDs_.push_back(newInstalledParts[jd]);
         }
-        curr_fixed.insert(curr_fixed.end(), boundaryPartIDs_.begin(), boundaryPartIDs_.end());
+
+        for(int partID : curr_fixed) {
+            unsigned part_state = computePartState(partID, *currNode);
+            step.actors_.push_back(part_state - 2);
+        }
         step.holdPartIDs_ = curr_fixed;
+        step.boundaryPartIDs_ = boundaryPartIDs_;
+
         sequence.steps.push_back(step);
     }
 }

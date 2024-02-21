@@ -27,6 +27,23 @@ void renderSequence()
     assemblyRender->held_part_ids_ = sequence.steps[sequence_id].holdPartIDs_;
     assemblyRender->compute();
     assemblyRender->update();
+
+    for(auto &robot: robots_) {
+        robot->j_.setZero();
+        robot->update();
+    }
+
+    for(int id = 0; id < (int) assemblyRender->held_part_ids_.size(); id++)
+    {
+        int partID = assemblyRender->held_part_ids_[id];
+        int actorID = sequence.steps[sequence_id].actors_[id];
+        util::Transform ee = assembly->blocks_[partID]->eeAnchor().front();
+        robots_[actorID]->ee_rpy_ = Eigen::Vector3f(ee.rpy.x(), ee.rpy.y(), ee.rpy.z());
+        robots_[actorID]->ee_xyz_ = Eigen::Vector3f(ee.xyz.x(), ee.xyz.y(), ee.xyz.z());
+        robots_[actorID]->compute();
+        robots_[actorID]->update();
+    }
+
 }
 
 void computeSequence()
@@ -47,9 +64,9 @@ int main() {
     polyscope::state::boundingBox =
     std::tuple<glm::vec3, glm::vec3>{ {-1., -1., 0.}, {1., 1., 1.} };
 
-    auto robot = std::make_shared<render::RobotRender>("robot1", Eigen::Vector3d(0, -2, 0));
+    auto robot = std::make_shared<render::RobotRender>("robot1", Eigen::Vector3d(-1.5, 0, 0));
     robots_.push_back(robot);
-    robot = std::make_shared<render::RobotRender>("robot2", Eigen::Vector3d(0, 2, 0));
+    robot = std::make_shared<render::RobotRender>("robot2", Eigen::Vector3d(1.5, 0, 0));
     robots_.push_back(robot);
 
     sequence_id = 0;
