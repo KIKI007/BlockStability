@@ -10,7 +10,7 @@
 #include "util/readOBJ.h"
 #include "ikfast.h"
 #include "util/Transform.h"
-
+#include "collision.h"
 #define IKFAST_HAS_LIBRARY
 namespace robot
 {
@@ -19,8 +19,9 @@ namespace robot
     struct RobotLink
     {
         std::string name;
-        Eigen::VectorXd collision_meshV;
-        Eigen::VectorXi collision_meshF;
+        Eigen::MatrixXd collision_meshV;
+        Eigen::MatrixXi collision_meshF;
+
         Eigen::MatrixXd visual_meshV;
         Eigen::MatrixXi visual_meshF;
 
@@ -77,6 +78,8 @@ namespace robot
         util::Transform forwardEE(const Eigen::VectorXd &j);
 
         std::vector<Eigen::VectorXd> inverseEE(const util::Transform &transf);
+
+        std::vector<Eigen::MatrixXd> computeGeometry(const Eigen::VectorXd &j, bool visual = true);
     };
 
 }

@@ -101,91 +101,19 @@ namespace rigid_block {
                                                        const std::vector<Eigen::Vector3d> &normals)
     {
         std::vector<ContactFace> contacts;
+        ConvexCluster cluster;
+        cluster.error_small_distance_ = error_small_distance_;
+        cluster.error_small_normal_ = error_small_normal_;
 
-        std::vector<int> groupIDs;
-        groupIDs.resize(points.size(), -1);
-        int count = 0;
-        for (int id = 0; id < points.size(); id++) {
-            if (groupIDs[id] == -1) {
-                Eigen::Vector3d pi = points[id];
-                Eigen::Vector3d ni = normals[id];
-                groupIDs[id] = count++;
-                for (int jd = id + 1; jd < points.size(); jd++) {
-                    if (groupIDs[jd] == -1) {
-                        Eigen::Vector3d pj = points[jd];
-                        Eigen::Vector3d nj = normals[jd];
-                        if ((ni - nj).norm() < error_small_normal_
-                            && abs((pi - pj).dot(ni)) < error_small_distance_) {
-                            groupIDs[jd] = groupIDs[id];
-                        }
-                    }
-                }
-            }
-        }
+        std::vector<std::vector<Eigen::Vector3d>> hull_points;
+        std::vector<Eigen::Vector3d> hull_normals;
+        cluster.computeConvexHull(points, normals, hull_points, hull_normals);
 
-        ConvexHull2D<double> convexhull;
-        for (int id = 0; id < count; id++) {
-            std::vector<Eigen::Vector3d> hull_pts;
-            Eigen::Vector3d hull_n;
-            for (int jd = 0; jd < points.size(); jd++) {
-                if (groupIDs[jd] == id) {
-                    hull_pts.push_back(points[jd]);
-                    hull_n = normals[jd];
-                }
-            }
-            std::vector<Eigen::Vector3d> hull;
-            convexhull.compute(hull_pts, hull_n, hull);
-            ContactFace newContact;
-            if (!hull.empty())
-            {
-                std::vector<Eigen::Vector3d> results;
-                results.push_back(hull.front());
-                for (int jd = 1; jd < hull.size(); jd++) {
-                    Eigen::Vector3d pt = hull[jd];
-                    if (results.size() == 1) {
-                        if ((results[0] - pt).norm() > error_small_distance_) {
-                            results.push_back(pt);
-                        }
-                    } else if (results.size() == 2) {
-                        Eigen::Vector3d p0 = results[0];
-                        Eigen::Vector3d p1 = results[1];
-                        Eigen::Vector3d p01 = p1 - p0;
-                        Eigen::Vector3d p1t = pt - p1;
-                        if (p01.cross(p1t).norm() > error_small_normal_) {
-                            results.push_back(pt);
-                        } else {
-                            results[1] = pt;
-                        }
-                    } else {
-                        Eigen::Vector3d p0 = results[0];
-                        Eigen::Vector3d p1 = results[1];
-                        Eigen::Vector3d p2 = results[results.size() - 2];
-                        Eigen::Vector3d p3 = results[results.size() - 1];
-                        Eigen::Vector3d p23 = p3 - p2;
-                        Eigen::Vector3d p3t = pt - p3;
-                        Eigen::Vector3d pt0 = p0 - pt;
-                        Eigen::Vector3d p01 = p1 - p0;
-
-                        if (p3t.cross(pt0).norm() < error_small_normal_) {
-                            continue ;
-                        } else {
-                            if (p23.cross(p3t).norm() < error_small_normal_) {
-                                results.back() = pt;
-                                continue ;
-                            }
-
-                            if (pt0.cross(p01).norm() < error_small_normal_) {
-                                results.front() = pt;
-                                continue ;
-                            }
-                        }
-                        results.push_back(pt);
-                    }
-                }
-                newContact.points = results;
-                newContact.normal = hull_n;
-                contacts.push_back(newContact);
-            }
+        for(int id = 0; id < hull_points.size(); id++) {
+            ContactFace face;
+            face.points = hull_points[id];
+            face.normal = hull_normals[id];
+            contacts.push_back(face);
         }
         return contacts;
     }

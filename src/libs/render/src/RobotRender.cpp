@@ -10,8 +10,9 @@ namespace render {
         robot_ = std::make_shared<robot::Robot>(name);
         robot_->baseT_.xyz = base_pos;
         robot_->eeT_.xyz = Eigen::Vector3d(0.2, 0 , 0);
-
+        robot_id_ = robot_count++;
         create();
+
     }
 
     RobotRender::~RobotRender() {
@@ -23,14 +24,21 @@ namespace render {
             polyscope::removeStructure(obj);
         }
 
-        polyscope::removeGroup(robot_group);
+        polyscope::removeGroup(robot_group_);
         polyscope::removeGroup(ee_group);
     }
 
     void RobotRender::gui()
     {
         std::string headname = robot_->name_ + "_gui";
-        if (ImGui::CollapsingHeader(headname.c_str())) {
+        if (ImGui::CollapsingHeader(headname.c_str()))
+        {
+            std::string name = robot_->name_ + ": collision";
+            if(ImGui::Checkbox(name.c_str(), &show_collision_)) {
+                create_body();
+                update_body();
+            }
+
             for(int id = 0; id < j_.size(); id++)
             {
                 float *data = j_.data() + id;
@@ -58,9 +66,19 @@ namespace render {
                 }
             }
 
-            std::string name = robot_->name_ + ": ik sol";
+            name = robot_->name_ + ": ik sol";
             if(ImGui::SliderInt(name.c_str(), &iksol_,  0,7))
             {
+                compute();
+            }
+
+            name = robot_->name_ + ": ee index";
+            int ub = std::clamp((int) eelist_.size() - 1, 0, std::numeric_limits<int>::max());
+            if(ImGui::SliderInt(name.c_str(), &eeindex_,  0,ub))
+            {
+                eeindex_ = std::clamp(eeindex_, 0, (int) eelist_.size());
+                ee_xyz_ = eelist_[eeindex_].xyz.cast<float>();
+                ee_rpy_ = eelist_[eeindex_].rpy.cast<float>();
                 compute();
             }
         }
@@ -71,7 +89,8 @@ namespace render {
         update_ee();
     }
 
-    void RobotRender::compute() {
+    void RobotRender::compute()
+    {
         util::Transform EE;
         EE.xyz = ee_xyz_.cast<double>();
         EE.rpy = ee_rpy_.cast<double>();
@@ -82,7 +101,8 @@ namespace render {
         }
     }
 
-    void RobotRender::create() {
+    void RobotRender::create()
+    {
         j_.resize(6);
         j_.setZero();
 
@@ -98,20 +118,36 @@ namespace render {
 
     void RobotRender::create_body()
     {
-        robot_group = polyscope::createGroup(robot_->name_ +"_body");
+        if(robot_group_ != NULL) {
+            polyscope::removeGroup(robot_group_);
+            robot_body_.clear();
+        }
+
+        robot_group_ = polyscope::createGroup(robot_->name_ +"_body");
         for(int id = 0; id < robot_->links_.size(); id++)
         {
             std::string name = robot_->name_ +"_body_" + robot_->links_[id]->name;
-            auto obj = polyscope::registerSurfaceMesh(name.c_str(), robot_->links_[id]->visual_meshV, robot_->links_[id]->visual_meshF);
-            obj->addToGroup(*robot_group);
+            Eigen::MatrixXd V;
+            Eigen::MatrixXi F;
+            if(show_collision_) {
+                V = robot_->links_[id]->collision_meshV;
+                F = robot_->links_[id]->collision_meshF;
+            }
+            else {
+                V = robot_->links_[id]->visual_meshV;
+                F = robot_->links_[id]->visual_meshF;
+            }
+            auto obj = polyscope::registerSurfaceMesh(name.c_str(), V, F);
+            obj->addToGroup(*robot_group_);
             robot_body_.push_back(obj);
-            obj->setSurfaceColor(glm::vec3(0.8, 0.8, 0.8));
+            obj->setSurfaceColor(body_color());
         }
-        robot_group->setHideDescendantsFromStructureLists(true);
-        robot_group->setShowChildDetails(false);
+        robot_group_->setHideDescendantsFromStructureLists(true);
+        robot_group_->setShowChildDetails(false);
     }
 
-    void RobotRender::create_ee() {
+    void RobotRender::create_ee()
+    {
         ee_group = polyscope::createGroup(robot_->name_ +"_ee");
 
         for(int id = 0; id < 3; id++)
@@ -151,16 +187,9 @@ namespace render {
 
     void RobotRender::update_body()
     {
-        std::vector<Eigen::Matrix4d> jointT, linkT;
-        robot_->forward(j_.cast<double>(), jointT, linkT);
+        std::vector<Eigen::MatrixXd> Vs = robot_->computeGeometry(j_.cast<double>(), !show_collision_);
         for(int id = 0; id < robot_->links_.size(); id++) {
-            Eigen::MatrixXd V = robot_->links_[id]->visual_meshV;
-            Eigen::MatrixXd Vh(V.rows(), 4); Vh.setOnes();
-            Vh.block(0, 0, V.rows(), 3) = V;
-
-            Eigen::MatrixXd VhT = Vh * linkT[id].transpose();
-            V = VhT.block(0, 0, V.rows(), 3);
-            robot_body_[id]->updateVertexPositions(V);
+            robot_body_[id]->updateVertexPositions(Vs[id]);
         }
     }
 }

@@ -10,6 +10,7 @@
 #include "Analyzer.h"
 #include "gurobi_c++.h"
 #include <memory>
+#include "util/ConvexCluster.h"
 
 namespace rigid_block
 {

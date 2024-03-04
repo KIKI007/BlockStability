@@ -62,7 +62,7 @@ void render::AssemblyRender::update()
             }
             else if(std::find(held_part_ids_.begin(), held_part_ids_.end(), partID) != held_part_ids_.end()) {
                 obj->setEnabled(true);
-                obj->setSurfaceColor(glm::vec3(1, 0, 0));
+                obj->setSurfaceColor(glm::vec3(0.3, 0.3, 0.3));
             }
             else if(std::find(installed_part_ids_.begin(), installed_part_ids_.end(), partID) != installed_part_ids_.end()) {
                 obj->setEnabled(true);
@@ -136,11 +136,9 @@ void render::AssemblyRender::create()
 }
 
 std::vector<rigid_block::Analyzer::PartStatus> render::AssemblyRender::getStatus() {
-    int N = assembly_->blocks_.size();
     std::vector<rigid_block::Analyzer::PartStatus> status;
     for(int partID = 0; partID < assembly_group_->childrenStructures.size(); partID++)
     {
-        auto obj = (BlockSelect *)(&assembly_group_->childrenStructures[partID].get());
         if(assembly_->blocks_[partID]->ground_ || std::find(held_part_ids_.begin(), held_part_ids_.end(), partID) != held_part_ids_.end()) {
             status.push_back(rigid_block::Analyzer::Fixed);
         }

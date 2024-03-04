@@ -14,13 +14,11 @@ namespace render
     {
     private:
 
-
-
         std::shared_ptr<rigid_block::Assembly> assembly_;
 
         std::shared_ptr<rigid_block::Analyzer> analyzer_;
 
-    private:
+    public:
 
         std::vector<BlockSelect *> blocks_objs_;
 

@@ -10,8 +10,8 @@ file(GLOB CRL_SOURCES #
 list(
     APPEND
     CRL_TARGET_DEPENDENCIES #
-    "kiki::rigid_block" #
     "kiki::search"
+    "kiki::scene"
     "kiki::render"
 )
 
@@ -21,8 +21,10 @@ list(APPEND CRL_TARGET_INCLUDE_DIRS #
 
 list(APPEND CRL_TARGET_LINK_LIBS #
     PUBLIC
-    "kiki::rigid_block" #
     "kiki::search"
+    PUBLIC
+    "kiki::scene"
+    PUBLIC
     "kiki::render"
 )
 

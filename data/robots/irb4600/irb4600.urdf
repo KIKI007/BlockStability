@@ -2,7 +2,7 @@
     <link name="base_link">
       <collision name="collision">
         <geometry>
-          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Base.obj"/>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Base.obj" scale="0.001"/>
         </geometry>
       </collision>
       <visual name="visual">
@@ -19,7 +19,7 @@
     <link name="link_1">
       <collision name="collision">
         <geometry>
-          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link1.obj"/>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link1.obj" scale="0.001"/>
         </geometry>
       </collision>
       <visual name="visual">
@@ -35,7 +35,7 @@
     <link name="link_2">
       <collision name="collision">
         <geometry>
-          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link2.obj"/>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link2.obj" scale="0.001"/>
         </geometry>
       </collision>
       <visual name="visual">
@@ -52,7 +52,7 @@
     <link name="link_3">
       <collision name="collision">
         <geometry>
-          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link3.obj"/>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link3.obj" scale="0.001"/>
         </geometry>
       </collision>
       <visual name="visual">
@@ -69,7 +69,7 @@
     <link name="link_4">
       <collision name="collision">
         <geometry>
-          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link4.obj"/>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link4.obj" scale="0.001"/>
         </geometry>
       </collision>
       <visual name="visual">
@@ -86,7 +86,7 @@
     <link name="link_5">
       <collision name="collision">
         <geometry>
-          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link5.obj"/>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link5.obj" scale="0.001"/>
         </geometry>
       </collision>
       <visual name="visual">
@@ -103,7 +103,7 @@
     <link name="link_6">
       <collision name="collision">
         <geometry>
-          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link6.obj"/>
+          <mesh filename="meshes/IRB4600_40kg-255_IRC5_rev04_Link6.obj" scale="0.001"/>
         </geometry>
       </collision>
       <visual name="visual">

@@ -9,14 +9,12 @@
 #include "polyscope/surface_mesh.h"
 #include "polyscope/curve_network.h"
 #include "polyscope/point_cloud.h"
-
+static int robot_count = 0;
 namespace render {
-    class RobotRender {
+    class RobotRender
+    {
     public:
-
-        bool show_robot_ = true;
-
-        bool show_ee_ = false;
+        bool show_collision_ = false;
 
     public:
 
@@ -28,7 +26,15 @@ namespace render {
 
         int iksol_ = 2;
 
+        int eeindex_ = 0;
+
         std::shared_ptr<robot::Robot> robot_;
+
+        int robot_id_ = 0;
+
+    public:
+
+        std::vector<util::Transform> eelist_;
 
     public:
 
@@ -36,7 +42,7 @@ namespace render {
 
         std::vector<polyscope::CurveNetwork *> robot_ee_;
 
-        polyscope::Group *robot_group, *ee_group;
+        polyscope::Group *robot_group_, *ee_group;
 
 
     private:
@@ -73,6 +79,12 @@ namespace render {
         void create_body();
 
         void create_ee();
+
+        glm::vec3 body_color() {
+            if(robot_id_ == 0)return {0.8, 0.5, 0.5};
+            else if(robot_id_ == 2) return {0.5, 0.8, 0.5};
+            return {0.5, 0.5, 0.8};
+        }
 
     };
 }

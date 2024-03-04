@@ -23,7 +23,6 @@ double SearchAlgorithmBeamSearch::search(StateGraph::PtrN inputNode, AssemblySeq
 
     while(!candidates_.empty())
     {
-
         step++;
         std::cout << step << std::endl;
 

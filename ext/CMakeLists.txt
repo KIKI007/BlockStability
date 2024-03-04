@@ -41,3 +41,22 @@ FetchContent_Declare(
 )
 fetch(tinyxml2)
 add_subdirectory(${tinyxml2_SOURCE_DIR} tinyxml2)
+
+#-----------------------------------------------------------------------------
+# libccd
+FetchContent_Declare(
+        libccd
+        GIT_REPOSITORY https://github.com/danfis/libccd.git
+        GIT_TAG v2.1
+)
+fetch(libccd)
+add_subdirectory(${libccd_SOURCE_DIR} libccd)
+
+#------------------------------------------------------------------------------
+# json
+FetchContent_Declare(
+        quickhull
+        GIT_REPOSITORY git@github.com:KIKI007/quickhull.git
+)
+fetch(quickhull)
+add_subdirectory(${quickhull_SOURCE_DIR} quickhull)

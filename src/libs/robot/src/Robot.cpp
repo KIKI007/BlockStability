@@ -7,6 +7,9 @@
 #include "util/readOBJ.h"
 #include "robot/ikfast.h"
 #include <memory>
+#include "QuickHull.hpp"
+#include "ccd/ccd.h"
+
 
 robot::Robot::Robot(std::string name) {
     name_ = name;
@@ -51,6 +54,8 @@ void robot::Robot::load(const std::string &folder_name, tinyxml2::XMLDocument &r
             printf("loading %s ...\n", name.c_str());
 
             tinyxml2::XMLElement* visual_node = child->FirstChildElement("visual");
+            //tinyxml2::XMLElement* collision_node = child->FirstChildElement("collision");
+
             tinyxml2::XMLElement* geometry_node = visual_node->FirstChildElement("geometry");
             std::string mesh_name = geometry_node->FirstChildElement("mesh")->Attribute("filename");
             std::string scale_text = geometry_node->FirstChildElement("mesh")->Attribute("scale");
@@ -61,10 +66,30 @@ void robot::Robot::load(const std::string &folder_name, tinyxml2::XMLDocument &r
             reader.loadFromFile(filename);
 
             std::shared_ptr<RobotLink> link = std::make_shared<RobotLink>();
-            if(!reader.Vs_.empty()) {
+            if(!reader.Vs_.empty())
+            {
                 link->visual_meshV = reader.Vs_.front() * scale;
                 link->visual_meshF = reader.Fs_.front();
+
+                Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> V =reader.Vs_.front() * scale;
+                quickhull::QuickHull<double> qh;
+                auto hull = qh.getConvexHull(V.data(), V.rows(), true, false);
+                auto indexBuffer = hull.getIndexBuffer();
+                auto vertexBuffer = hull.getVertexBuffer();
+
+                link->collision_meshV = Eigen::MatrixXd(vertexBuffer.size(), 3); link->collision_meshV.setZero();
+                link->collision_meshF = Eigen::MatrixXi(indexBuffer.size() / 3, 3); link->collision_meshF.setZero();
+                for(int vi = 0; vi < vertexBuffer.size(); vi++)
+                {
+                    auto pt = vertexBuffer[vi];
+                    link->collision_meshV.row(vi) = Eigen::RowVector3d(pt.x, pt.y, pt.z);
+                }
+                for(int fi = 0; fi < indexBuffer.size() / 3; fi++)
+                {
+                    link->collision_meshF.row(fi) = Eigen::RowVector3i(indexBuffer[3 * fi], indexBuffer[3 * fi + 1], indexBuffer[3 * fi + 2]);
+                }
             }
+
             link->name = name;
             link->transf = util::Transform (visual_node->FirstChildElement("origin"));
             links_.push_back(link);
@@ -146,5 +171,26 @@ std::vector<Eigen::VectorXd> robot::Robot::inverseEE(const util::Transform &tran
     }
 
     return results;
+}
+
+std::vector<Eigen::MatrixXd> robot::Robot::computeGeometry(const Eigen::VectorXd &j, bool visual)
+{
+    std::vector<Eigen::MatrixXd> Vs;
+    std::vector<Eigen::Matrix4d> jointT, linkT;
+    forward(j, jointT, linkT);
+    for(int id = 0; id < links_.size(); id++)
+    {
+        Eigen::MatrixXd V;
+        if(visual) V = links_[id]->visual_meshV;
+        else V = links_[id]->collision_meshV;
+
+        Eigen::MatrixXd Vh(V.rows(), 4); Vh.setOnes();
+        Vh.block(0, 0, V.rows(), 3) = V;
+
+        Eigen::MatrixXd VhT = Vh * linkT[id].transpose();
+        V = VhT.block(0, 0, V.rows(), 3);
+        Vs.push_back(V);
+    }
+    return Vs;
 }
 

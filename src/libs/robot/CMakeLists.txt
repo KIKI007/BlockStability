@@ -19,6 +19,8 @@ list(
         CRL_TARGET_DEPENDENCIES #
         "Eigen3::Eigen"
         "util"
+        "QuickHull"
+        "ccd"
 )
 
 # target include dirs
@@ -32,6 +34,8 @@ list(
         PUBLIC
         "Eigen3::Eigen"
         "util"
+        "QuickHull"
+        "ccd"
 )
 
 # compile definitions
