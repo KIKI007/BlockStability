@@ -1,6 +1,6 @@
 #include "rigid_block/Assembly.h"
 #include "render/AssemblyRender.h"
-#include "search/SearchAlgorithmBeamSearch.h"
+#include "../../libs/search/backup/SearchAlgorithmBeamSearch.h"
 #include "search/StateGraphHolding.h"
 #include "render/file_dialog_open.h"
 #include "render/RobotRender.h"

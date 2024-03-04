@@ -2,7 +2,7 @@
 // Created by 汪子琦 on 23.03.22.
 //
 
-#include "search/SearchAlgorithmBeamSearch.h"
+#include "SearchAlgorithmBeamSearch.h"
 
 #include <tbb/parallel_for.h>
 

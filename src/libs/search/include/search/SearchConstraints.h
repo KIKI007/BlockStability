@@ -9,6 +9,15 @@
 #include <search/SubsetTree.h>
 namespace search
 {
+    struct SearchNode
+    {
+        StateGraph::PtrN assembly_state;
+        std::vector<int> robot_states;
+    };
+
+    struct SearchNodeEdge {
+
+    };
 
 class StateGraph_BaseConstraint: std::enable_shared_from_this<StateGraph_BaseConstraint> {
 public:

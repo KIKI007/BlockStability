@@ -7,13 +7,14 @@
 
 #include <string>
 #include "StateGraph.h"
-#include "StateGraphConstraints.h"
+#include "SearchConstraints.h"
 #include "tbb/concurrent_vector.h"
 #include "tbb/parallel_for.h"
 
 namespace search
 {
-    class StateGraph_BaseGenerator : std::enable_shared_from_this<StateGraph_BaseGenerator> {
+
+    class SearchGraph_BaseGenerator : std::enable_shared_from_this<StateGraph_BaseGenerator> {
     public:
         std::string label_;
 
@@ -22,12 +23,12 @@ namespace search
         std::vector<std::shared_ptr<StateGraph_BaseConstraint> > constraints_;
 
     public:
-        StateGraph_BaseGenerator(StateGraph *graph) {
+        SearchGraph_BaseGenerator(StateGraph *graph) {
             label_ = "base_generator";
             graph_ = graph;
         }
 
-        StateGraph_BaseGenerator() {
+        SearchGraph_BaseGenerator() {
             label_ = "base_generator";
         }
 

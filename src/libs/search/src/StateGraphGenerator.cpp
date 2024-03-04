@@ -2,7 +2,7 @@
 // Created by 汪子琦 on 01.11.23.
 //
 
-#include "search/StateGraphGenerator.h"
+#include "search/SearchGenerator.h"
 
 
 namespace search
@@ -11,9 +11,7 @@ namespace search
                                                std::vector<StateGraphEdge> &edges) {
         tbb::concurrent_vector<std::pair<std::vector<unsigned int>, StateGraph::PtrN> > results_tbb;
 
-        //tbb::parallel_for(tbb::blocked_range<int>(0, input_nodes.size()), [&](tbb::blocked_range<int> r) {
         for(int id = 0; id < input_nodes.size(); id++){
-            //for (int id = r.begin(); id < r.end(); ++id) {
             StateGraph::PtrN input_node = input_nodes[id];
             std::vector<std::vector<unsigned int> > tmp;
             newNodes(input_node, tmp);
@@ -21,7 +19,6 @@ namespace search
                 results_tbb.push_back({tmp[jd], input_node});
             }
         }
-        //});
 
         std::vector<StateGraph::State> next_states;
         std::vector<StateGraph::PtrN> prev_nodes;
@@ -40,8 +37,6 @@ namespace search
     {
         tbb::concurrent_vector<StateGraphEdge> trimed_edges_tbb;
 
-        //tbb::parallel_for(tbb::blocked_range<int>(0, next_states.size()), [&](tbb::blocked_range<int> r) {
-            //for (int id = r.begin(); id < r.end(); ++id)
             for(int id = 0; id < next_states.size(); ++id)
             {
                 StateGraph::State next_state = next_states[id];
@@ -52,11 +47,10 @@ namespace search
                 edge.label = label_;
                 edge.edge_cost = 1;
 
-                for (auto constraint: constraints_) {
+                for (auto constraint: constraints_)
+                {
                     double cost = 0;
                     bool check_result = constraint->check(prev_state, next_state, cost);
-                    edge.constraints_label.push_back(constraint->label_);
-                    edge.constraints_cost.push_back(cost);
                     if (check_result == false) {
                         violate = true;
                         break;
@@ -69,7 +63,6 @@ namespace search
                     trimed_edges_tbb.push_back(edge);
                 }
             }
-       // });
 
         for (int id = 0; id < trimed_edges_tbb.size(); id++) {
             StateGraphEdge edge = trimed_edges_tbb[id];

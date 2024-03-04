@@ -5,7 +5,7 @@
 #ifndef ROBO_CRAFT_STATEGRAPHMULTIPLEARMS_H
 #define ROBO_CRAFT_STATEGRAPHMULTIPLEARMS_H
 #include "StateGraph.h"
-#include "StateGraphGenerator.h"
+#include "SearchGenerator.h"
 namespace search
 {
 
@@ -17,7 +17,6 @@ namespace search
 class StateGraphHolding : public StateGraph
 {
 public:
-    int nRobot_;
 
     bool solution_include_empty_node_ = true;
 
@@ -25,7 +24,7 @@ public:
 
 public:
 
-    StateGraphHolding(std::shared_ptr<PartGraph> partGraph, int nRobot);
+    StateGraphHolding(std::shared_ptr<PartGraph> partGraph);
 
 public:
 

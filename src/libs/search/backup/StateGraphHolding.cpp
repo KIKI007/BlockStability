@@ -3,7 +3,7 @@
 //
 
 #include "search/StateGraphHolding.h"
-#include "search/StateGraphGenerator.h"
+#include "../include/search/SearchGenerator.h"
 
 namespace search
 {

@@ -1,7 +1,7 @@
 //
 // Created by 汪子琦 on 01.11.23.
 //
-#include "search/StateGraphConstraints.h"
+#include "search/SearchConstraints.h"
 
 bool search::StateGraph_BaseConstraint::compute_current_beam(const StateGraph::State& prev_node, const StateGraph::State& curr_node, int &curr_beam)
 {

@@ -28,12 +28,8 @@ public:
 
 class StateGraphEdge{
 public:
-    std::vector<double> constraints_cost;
-    std::vector<std::string> constraints_label;
     std::string label;
-    std::vector<unsigned int> next_state;
     std::shared_ptr<StateGraphNode> prev_node, next_node;
-    double edge_cost;
 };
 
 struct StateCompare {

@@ -4,7 +4,7 @@
 
 #ifndef ROBO_CRAFT_SEARCHALGORITHMBEAMSEARCH_H
 #define ROBO_CRAFT_SEARCHALGORITHMBEAMSEARCH_H
-#include "SearchAlgorithm.h"
+#include "../include/search/SearchAlgorithm.h"
 namespace search
 {
 class SearchAlgorithmBeamSearch: public SearchAlgorithm
