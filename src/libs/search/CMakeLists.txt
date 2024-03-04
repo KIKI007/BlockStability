@@ -18,6 +18,7 @@ list(
     APPEND
     CRL_TARGET_DEPENDENCIES #
     "kiki::rigid_block"
+    "kiki::robot"
     "TBB::tbb"
     "nlohmann_json::nlohmann_json"
 )
@@ -33,7 +34,11 @@ list(
     CRL_TARGET_LINK_LIBS #
     PUBLIC
     "TBB::tbb"
+    PUBLIC
+    "kiki::robot"
+    PUBLIC
     "kiki::rigid_block"
+    PUBLIC
     "nlohmann_json::nlohmann_json"
 )
 
