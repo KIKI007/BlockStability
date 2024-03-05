@@ -145,7 +145,7 @@ int main() {
             assembly->loadFromFile(obj_file);
             assemblyRender.reset();
             assemblyRender = std::make_shared<render::AssemblyRender>("", assembly);
-            //computeSequence();
+            computeSequence();
             sequence_id = 0;
 
             std::vector<std::shared_ptr<robot::Robot>> rs;
