@@ -12,6 +12,7 @@
 struct SearchNode
 {
     std::vector<unsigned> assembly_state;
+
     std::vector<int> robot_ids;
     std::vector<Eigen::VectorXd> robot_angles_;
     std::vector<int> held_part_ids;

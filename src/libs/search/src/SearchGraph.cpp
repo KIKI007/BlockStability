@@ -9,6 +9,11 @@ namespace search {
         scene_ = scene;
         std::shared_ptr<search::PartGraph> part_graph = std::make_shared<search::PartGraph>(scene->assembly_);
         state_graph_ = std::make_shared<search::StateGraphHelding>(part_graph);
+        for(int id = 0; id < scene->assembly_->blocks_.size(); id++) {
+            if(scene->assembly_->blocks_[id]->ground_)
+                state_graph_->boundaryPartIDs_.push_back(id);
+        }
+
 
         for(int id = 0; id < scene_->robots_.size(); id++)
         {
@@ -81,7 +86,7 @@ namespace search {
             AssemblyStep step;
             step.installPartIDs_ = state_graph_->getNewInstalledParts(prevState, currState);
             step.boundaryPartIDs_ = state_graph_->boundaryPartIDs_;
-            step.holdPartIDs_ = state_graph_->getFixedParts(currState);
+            step.holdPartIDs_ = currNode->held_part_ids;
             step.robot_angles_ = currNode->robot_angles_;
             step.robot_ids_ = currNode->robot_ids;
             sequence.steps.push_back(step);

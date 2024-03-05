@@ -9,7 +9,8 @@ std::vector<int> ConvexCluster::computeClusterByPlane(const std::vector<Eigen::V
     groupIDs.resize(points.size(), -1);
     int count = 0;
     for (int id = 0; id < points.size(); id++) {
-        if (groupIDs[id] == -1) {
+        if (groupIDs[id] == -1)
+        {
             Eigen::Vector3d pi = points[id];
             Eigen::Vector3d ni = normals[id];
             groupIDs[id] = count++;
@@ -29,7 +30,8 @@ std::vector<int> ConvexCluster::computeClusterByPlane(const std::vector<Eigen::V
 }
 
 void ConvexCluster::computeConvexHull(
-    const std::vector<Eigen::Vector3d> &points,
+
+const std::vector<Eigen::Vector3d> &points,
     const std::vector<Eigen::Vector3d> &normals,
     std::vector<std::vector<Eigen::Vector3d>> &out_points,
     std::vector<Eigen::Vector3d> &out_normal) {

@@ -102,8 +102,6 @@ namespace rigid_block {
     {
         std::vector<ContactFace> contacts;
         ConvexCluster cluster;
-        cluster.error_small_distance_ = error_small_distance_;
-        cluster.error_small_normal_ = error_small_normal_;
 
         std::vector<std::vector<Eigen::Vector3d>> hull_points;
         std::vector<Eigen::Vector3d> hull_normals;

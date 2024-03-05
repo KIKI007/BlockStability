@@ -127,13 +127,18 @@ namespace rigid_block {
             Eigen::Vector3d p0 = V_.row(F_(id, 0));
             Eigen::Vector3d p1 = V_.row(F_(id, 1));
             Eigen::Vector3d p2 = V_.row(F_(id, 2));
-            Eigen::Vector3d n = -(p1 - p0).cross(p2 - p0); n.normalize();
+            Eigen::Vector3d n = -(p1 - p0).cross(p2 - p0);
+            if(n.norm() < 1E-6) continue;;
+            n.normalize();
             points.push_back(p0); normals.push_back(n);
             points.push_back(p1); normals.push_back(n);
             points.push_back(p2); normals.push_back(n);
         }
 
         ConvexCluster cluster;
+        cluster.error_small_distance_ = 1E-4;
+        cluster.error_small_normal_ = 1E-2;
+
         std::vector<std::vector<Eigen::Vector3d>> hull_points;
         std::vector<Eigen::Vector3d> hull_normals;
         cluster.computeConvexHull(points, normals, hull_points, hull_normals);
@@ -159,7 +164,7 @@ namespace rigid_block {
             item.t.xyz /= (double) pts.size();
 
             //normal
-            Eigen::Vector3d n = -(pts[1] - pts[0]).cross(pts[2] - pts[0]);
+            Eigen::Vector3d n = hull_normals[id];
 
             //frame
             Eigen::Vector3d yaxis = Eigen::Vector3d(1, 0, 0).cross(n);

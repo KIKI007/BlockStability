@@ -69,10 +69,10 @@ void renderSequence()
         robot->update();
     }
 
-    for(int id = 0; id < assemblyRender->held_part_ids_.size(); id++)
+    for(int id = 0; id < sequence.steps[sequence_id].robot_ids_.size(); id++)
     {
-        int partID = assemblyRender->held_part_ids_[id];
         int actorID = sequence.steps[sequence_id].robot_ids_[id];
+        int partID = sequence.steps[sequence_id].holdPartIDs_[id];
         robots[actorID]->eelist_ = assembly->blocks_[partID]->eeAnchor();
         robots[actorID]->j_ = sequence.steps[sequence_id].robot_angles_[id].cast<float>();
         robots[actorID]->update();
@@ -82,8 +82,9 @@ void renderSequence()
 void computeSequence()
 {
     assembly->friction_coeff_ = assemblyRender->friction_coeff_;
+    scene1->assembly_->friction_coeff_ = assemblyRender->friction_coeff_;
     std::shared_ptr<search::SearchGraph> graph = std::make_shared<search::SearchGraph>(scene1);
-    std::shared_ptr<search::SearchAlgorithmBeamSearch> search = std::make_shared<search::SearchAlgorithmBeamSearch>(graph, 10);
+    std::shared_ptr<search::SearchAlgorithmBeamSearch> search = std::make_shared<search::SearchAlgorithmBeamSearch>(graph, 100);
     search->search(sequence);
 }
 
@@ -141,8 +142,9 @@ int main() {
                 rs.push_back(r->robot_);
             }
             scene1 = std::make_shared<scene::Scene>(assembly, rs);
-
             computeSequence();
+
+            //assembly->blocks_[64]->eeAnchor();
 
         }
 

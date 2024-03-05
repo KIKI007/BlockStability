@@ -63,15 +63,15 @@ void robot::Robot::load(const std::string &folder_name, tinyxml2::XMLDocument &r
 
             std::string filename = folder_name + "/" + mesh_name;
             util::readOBJ reader;
-            // reader.loadFromFile(filename);
+            reader.loadFromFile(filename);
 
             std::shared_ptr<RobotLink> link = std::make_shared<RobotLink>();
 
-            reader.Vs_.push_back(Eigen::MatrixXd(3, 3));
-            reader.Vs_[0] << 0, 0, 1E6,
-            0, 0, 1E6,
-            0, 0, 1E6;
-            reader.Fs_.push_back(Eigen::RowVector3i(0, 1, 2));
+            // reader.Vs_.push_back(Eigen::MatrixXd(3, 3));
+            // reader.Vs_[0] << 0, 0, 1E6,
+            // 0, 0, 1E6,
+            // 0, 0, 1E6;
+            // reader.Fs_.push_back(Eigen::RowVector3i(0, 1, 2));
 
             if(!reader.Vs_.empty())
             {

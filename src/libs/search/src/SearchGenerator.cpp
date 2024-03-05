@@ -120,9 +120,10 @@ namespace search
                     auto block = scene_->assembly_->blocks_[select_part_id];
                     auto r = scene_->robots_[robotID_];
                     auto eelist = block->eeAnchor();
-                    for(auto &ee: eelist)
-                    {
+                    if(!eelist.empty()) eelist = {eelist[0]};
+                    for(auto &ee: eelist) {
                         auto js = r->inverseEE(ee);
+                        if(!js.empty() && js.size() > 2) js = {js[2]};
                         for(auto &j : js)
                         {
                             PtrS new_node = std::make_shared<SearchNode>();

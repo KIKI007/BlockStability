@@ -15,7 +15,7 @@ PartGraph::PartGraph(std::shared_ptr<rigid_block::Assembly> assembly)
         nodes_[id].grounded = assembly->blocks_[id]->ground_;
     }
 
-    analyzer_ = assembly->createAnalyzer(true);
+    analyzer_ = assembly->createAnalyzer(false);
 
     std::vector<std::set<unsigned >> adjacency;
     adjacency.resize(analyzer_->n_part());
