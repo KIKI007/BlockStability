@@ -16,11 +16,6 @@ namespace search
 
 class StateGraphHolding : public StateGraph
 {
-public:
-
-    bool solution_include_empty_node_ = true;
-
-    std::vector<std::shared_ptr<StateGraph_BaseGenerator>> generators_;
 
 public:
 

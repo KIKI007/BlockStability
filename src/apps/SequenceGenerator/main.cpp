@@ -1,7 +1,6 @@
 #include "rigid_block/Assembly.h"
 #include "render/AssemblyRender.h"
-#include "../../libs/search/backup/SearchAlgorithmBeamSearch.h"
-#include "search/StateGraphHolding.h"
+#include "search/SearchAlgorithmBeamSearch.h"
 #include "render/file_dialog_open.h"
 #include "render/RobotRender.h"
 #include "scene/Scene.h"
@@ -28,11 +27,8 @@ void check_collision()
 {
     if(!sequence.steps.empty()) {
         std::vector<int> subset_part_ids = assemblyRender->installed_part_ids_;
-        std::vector<int> robot_ids = sequence.steps[sequence_id].actors_;
-        std::vector<Eigen::VectorXd> joint_angles;
-        for(int ri : robot_ids) {
-            joint_angles.push_back(robots[ri]->j_.cast<double>());
-        }
+        std::vector<int> robot_ids = sequence.steps[sequence_id].robot_ids_;
+        std::vector<Eigen::VectorXd> joint_angles = sequence.steps[sequence_id].robot_angles_;
 
         switch (scene1->checkCollision(subset_part_ids, robot_ids, joint_angles))
         {
@@ -76,25 +72,18 @@ void renderSequence()
     for(int id = 0; id < assemblyRender->held_part_ids_.size(); id++)
     {
         int partID = assemblyRender->held_part_ids_[id];
-        int actorID = sequence.steps[sequence_id].actors_[id];
-        std::vector<util::Transform> eelist = assembly->blocks_[partID]->eeAnchor();
-        robots[actorID]->eeindex_ = std::clamp(robots[actorID]->eeindex_, 0, (int) eelist.size());
-        util::Transform ee = eelist[robots[actorID]->eeindex_];
-        robots[actorID]->ee_rpy_ = Eigen::Vector3f(ee.rpy.x(), ee.rpy.y(), ee.rpy.z());
-        robots[actorID]->ee_xyz_ = Eigen::Vector3f(ee.xyz.x(), ee.xyz.y(), ee.xyz.z());
-        robots[actorID]->eelist_ = eelist;
-        robots[actorID]->compute();
+        int actorID = sequence.steps[sequence_id].robot_ids_[id];
+        robots[actorID]->eelist_ = assembly->blocks_[partID]->eeAnchor();
+        robots[actorID]->j_ = sequence.steps[sequence_id].robot_angles_[id].cast<float>();
         robots[actorID]->update();
     }
-
 }
 
 void computeSequence()
 {
     assembly->friction_coeff_ = assemblyRender->friction_coeff_;
-    std::shared_ptr<search::PartGraph> part_graph = std::make_shared<search::PartGraph>(assembly);
-    std::shared_ptr<search::StateGraphHolding> stateGraph = std::make_shared<search::StateGraphHolding>(part_graph, 2);
-    std::shared_ptr<search::SearchAlgorithmBeamSearch> search = std::make_shared<search::SearchAlgorithmBeamSearch>(stateGraph, 10);
+    std::shared_ptr<search::SearchGraph> graph = std::make_shared<search::SearchGraph>(scene1);
+    std::shared_ptr<search::SearchAlgorithmBeamSearch> search = std::make_shared<search::SearchAlgorithmBeamSearch>(graph, 10);
     search->search(sequence);
 }
 
@@ -145,7 +134,6 @@ int main() {
             assembly->loadFromFile(obj_file);
             assemblyRender.reset();
             assemblyRender = std::make_shared<render::AssemblyRender>("", assembly);
-            //computeSequence();
             sequence_id = 0;
 
             std::vector<std::shared_ptr<robot::Robot>> rs;
@@ -153,6 +141,9 @@ int main() {
                 rs.push_back(r->robot_);
             }
             scene1 = std::make_shared<scene::Scene>(assembly, rs);
+
+            computeSequence();
+
         }
 
         if(assemblyRender)

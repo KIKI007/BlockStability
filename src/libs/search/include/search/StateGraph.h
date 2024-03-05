@@ -21,7 +21,6 @@ class StateGraphNode
 public:
     int chunkOffset;
     int nodeID;
-
     double currentCost;
     int parent;
 };
@@ -227,7 +226,13 @@ public:
         }
         std::cout << std::endl;
     }
-
 };
+
+    class StateGraphHelding: public StateGraph{
+    public:
+        StateGraphHelding(std::shared_ptr<PartGraph> graph): StateGraph(graph, 3){
+
+        }
+    };
 }
 #endif  //ROBO_CRAFT_STATEGRAPH_H

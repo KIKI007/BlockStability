@@ -4,7 +4,7 @@
 
 #ifndef ROBO_CRAFT_SEARCHALGORITHMBEAMSEARCH_H
 #define ROBO_CRAFT_SEARCHALGORITHMBEAMSEARCH_H
-#include "../include/search/SearchAlgorithm.h"
+#include "search/SearchAlgorithm.h"
 namespace search
 {
 class SearchAlgorithmBeamSearch: public SearchAlgorithm
@@ -13,9 +13,9 @@ public:
 
     int maxLayerNodeExplore = 10000;
 
-    SearchAlgorithmBeamSearch(std::shared_ptr<StateGraph> stateGraph,
+    SearchAlgorithmBeamSearch(std::shared_ptr<SearchGraph> graph,
                               int maxLayerNodeExplore):
-          SearchAlgorithm(stateGraph),
+          SearchAlgorithm(graph),
           maxLayerNodeExplore(maxLayerNodeExplore)
     {
 
@@ -25,11 +25,7 @@ public:
 
     double search(AssemblySequence &sequence) override;
 
-    double search(StateGraph::PtrN inputNode, AssemblySequence &sequence);
-
-    void updateNode(StateGraph::PtrN currNode, StateGraph::PtrN updateNode, double edgeCost);
-
-    void print(StateGraph::PtrN node) override;
+    double search(PtrS inputNode, AssemblySequence &sequence);
 
     void trimSolution();
 

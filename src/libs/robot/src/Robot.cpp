@@ -63,15 +63,22 @@ void robot::Robot::load(const std::string &folder_name, tinyxml2::XMLDocument &r
 
             std::string filename = folder_name + "/" + mesh_name;
             util::readOBJ reader;
-            reader.loadFromFile(filename);
+            // reader.loadFromFile(filename);
 
             std::shared_ptr<RobotLink> link = std::make_shared<RobotLink>();
+
+            reader.Vs_.push_back(Eigen::MatrixXd(3, 3));
+            reader.Vs_[0] << 0, 0, 1E6,
+            0, 0, 1E6,
+            0, 0, 1E6;
+            reader.Fs_.push_back(Eigen::RowVector3i(0, 1, 2));
+
             if(!reader.Vs_.empty())
             {
                 link->visual_meshV = reader.Vs_.front() * scale;
                 link->visual_meshF = reader.Fs_.front();
 
-                Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> V =reader.Vs_.front() * scale;
+                Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> V = link->visual_meshV;
                 quickhull::QuickHull<double> qh;
                 auto hull = qh.getConvexHull(V.data(), V.rows(), true, false);
                 auto indexBuffer = hull.getIndexBuffer();

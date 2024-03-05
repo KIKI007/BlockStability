@@ -20,6 +20,7 @@ list(
     "kiki::rigid_block"
     "kiki::robot"
     "TBB::tbb"
+    "kiki::scene"
     "nlohmann_json::nlohmann_json"
 )
 
@@ -38,6 +39,8 @@ list(
     "kiki::robot"
     PUBLIC
     "kiki::rigid_block"
+    PUBLIC
+    "kiki::scene"
     PUBLIC
     "nlohmann_json::nlohmann_json"
 )

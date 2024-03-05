@@ -10,7 +10,7 @@
 #include <set>
 
 #include "AssemblySequence.h"
-#include "StateGraph.h"
+#include "SearchGraph.h"
 
 namespace search
 {
@@ -18,27 +18,26 @@ class SearchAlgorithm
 {
 public:
 
-    std::shared_ptr<StateGraph> stateGraph_;
+    std::shared_ptr<SearchGraph> graph_;
 
-    std::vector<StateGraph::PtrN> candidates_;
+    std::vector<PtrS> candidates_;
 
     std::unordered_map<int, int> searchNodeInQueue_;
 
 public:
 
-    SearchAlgorithm(std::shared_ptr<StateGraph> stateGraph) : stateGraph_(stateGraph) {}
+    SearchAlgorithm(std::shared_ptr<SearchGraph> graph) : graph_(graph) {}
 
 public:
 
     void clear() {
         candidates_.clear();
         searchNodeInQueue_.clear();
-        stateGraph_->clear();
     }
 
     virtual double search(AssemblySequence &sequence){return -1.0;}
 
-    void getSolution(StateGraph::PtrN node, AssemblySequence &sequence);
+    AssemblySequence getSolution(PtrS node);
 
     //debug
     virtual void print(StateGraph::PtrN node){};

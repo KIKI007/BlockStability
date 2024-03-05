@@ -17,7 +17,8 @@ public:
     std::vector<int> installPartIDs_;
     std::vector<int> holdPartIDs_;
     std::vector<int> boundaryPartIDs_;
-    std::vector<int> actors_;
+    std::vector<int> robot_ids_;
+    std::vector<Eigen::VectorXd> robot_angles_;
 
 public:
 //    std::vector<Eigen::Vector3d> partDrts;

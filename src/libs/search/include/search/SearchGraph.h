@@ -6,22 +6,34 @@
 #define SEARCHGRAPH_H
 
 #include "StateGraph.h"
+#include "SearchConstraints.h"
+#include "SearchGenerator.h"
+#include "scene/Scene.h"
+#include "PartGraph.h"
+#include "AssemblySequence.h"
 
-struct SearchNode {
-public:
-    search::StateGraph::PtrN assembly_state;
-    std::vector<int> robot_states;
-};
+namespace search {
+    class SearchGraph {
+    public:
+        std::vector<std::shared_ptr<search::SearchGraph_BaseGenerator>> generators_;
+        std::shared_ptr<search::StateGraph> state_graph_;
+        std::shared_ptr<scene::Scene> scene_;
 
-struct SearchEdge {
-public:
-    std::shared_ptr<SearchNode> prev_node, next_node;
-};
+    public:
 
-class SearchGraph {
+        SearchGraph(std::shared_ptr<scene::Scene> scene);
 
-};
+    public:
 
+        PtrS createRootNode();
 
+        bool checkEndNode(PtrS node);
+
+        AssemblySequence getSolution(const std::vector<PtrS> &input_nodes);
+
+        std::vector<PtrS> expandNodes(const std::vector<PtrS> &input_nodes);
+
+    };
+}
 
 #endif //SEARCHGRAPH_H
